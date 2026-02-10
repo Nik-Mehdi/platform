@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sam Pack Admin V19.0 (Full Edit)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+    <style>
+        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f0f2f5; --sidebar-width: 260px; }
+        body { background: var(--bg); font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding-bottom: 80px; overflow-x: hidden; }
+        
+        /* --- DESKTOP STYLES --- */
+        #admin-lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .pin-input { background: transparent; border: none; border-bottom: 2px solid rgba(255,255,255,0.3); color: white; font-size: 2rem; letter-spacing: 10px; text-align: center; width: 200px; margin-bottom: 20px; outline: none; }
+        .login-btn { width: 60px; height: 60px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        
+        .sidebar { width: var(--sidebar-width); height: 100vh; position: fixed; top: 0; left: 0; background: var(--primary); color: white; display: flex; flex-direction: column; z-index: 1050; transition: transform 0.3s ease-in-out; }
+        .nav-btn { padding: 15px 20px; cursor: pointer; color: #adb5bd; display: flex; align-items: center; gap: 10px; transition: 0.2s; text-decoration: none; border-left: 4px solid transparent; font-weight: 500; }
+        .nav-btn:hover, .nav-btn.active { background: rgba(255,255,255,0.1); color: white; border-left-color: var(--accent); }
+        .history-box { margin-top: auto; padding: 20px; background: rgba(0,0,0,0.2); }
+        .date-ctrl input { border: none; padding: 10px; width: 100%; outline: none; font-weight: bold; color: var(--primary); text-align: center; border-radius: 8px; }
+        
+        .main-content { margin-left: var(--sidebar-width); padding: 30px; }
+        .card-box { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); margin-bottom: 25px; border: none; }
+        .status-badge { padding: 6px 14px; border-radius: 30px; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
+        .st-packed { background: #e3f2fd; color: #0d47a1; } .st-delivered { background: #e8f5e9; color: #1b5e20; } .st-returned { background: #ffebee; color: #b71c1c; }
+        
+        .mobile-header, .mobile-date-bar, .bottom-nav, .mobile-total-bar { display: none; } /* Hidden on Desktop */
+
+        /* SEARCH BAR STYLES */
+        .search-container { position: relative; margin-bottom: 15px; }
+        .search-input { width: 100%; padding: 12px 15px 12px 40px; border-radius: 12px; border: 1px solid #ddd; background: white; outline: none; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .search-input:focus { border-color: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa; }
+
+        /* --- MOBILE STYLES (FIXED LAYOUT) --- */
+        @media (max-width: 768px) {
+            .sidebar { display: none !important; } .sidebar-backdrop { display: none !important; }
+            
+            /* Fixed Header & Date */
+            .mobile-header { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 50px; background: white; z-index: 1040; align-items: center; justify-content: center; box-shadow: 0 1px 5px rgba(0,0,0,0.05); }
+            .mobile-header h6 { color: var(--primary); font-weight: 900; letter-spacing: 1px; margin: 0; font-size: 1rem; }
+            .mobile-date-bar { display: flex; position: fixed; top: 50px; left: 0; width: 100%; height: 50px; background: #f8f9fa; z-index: 1039; align-items: center; justify-content: center; border-bottom: 1px solid #eee; padding: 0 15px; }
+            .mobile-date-input { border: none; background: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; color: var(--primary); text-align: center; width: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.05); outline: none; font-size: 0.9rem; }
+
+            /* Main Content Padded for Fixed Bars */
+            .main-content { margin-left: 0 !important; padding: 15px !important; padding-top: 115px !important; padding-bottom: 80px !important; }
+            
+            /* Grid Actions */
+            .dash-actions-mobile { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; justify-content: center; }
+            .dash-actions-mobile .btn { flex: 1 1 auto; min-width: 45%; border-radius: 8px; font-size: 0.85rem; padding: 8px 5px; }
+            .dash-header-mobile { display: block !important; }
+            #dashTitle { display: none; } 
+
+            /* Mobile Total Bar - Updated for Count */
+            .mobile-total-bar { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; color: white; padding: 8px 15px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85rem; }
+
+            /* Card Style Fixes */
+            #mainTable thead { display: none; } 
+            #mainTable tbody tr { display: block; background: white; border-radius: 12px; margin-bottom: 15px; padding: 15px; border: 1px solid #f0f0f0; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+            #mainTable tbody td { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f8f9fa; }
+            #mainTable tbody td:last-child { border-bottom: none; padding-top: 15px; justify-content: flex-end; gap: 5px; }
+
+            /* Bottom Navigation */
+            .bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; width: 100%; height: 65px; background: white; border-top: 1px solid #eee; z-index: 1050; justify-content: space-around; align-items: center; padding-bottom: 5px; box-shadow: 0 -5px 20px rgba(0,0,0,0.03); }
+            .b-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #95a5a6; font-size: 0.7rem; width: 25%; cursor: pointer; transition: 0.2s; }
+            .b-nav-item i { font-size: 1.3rem; margin-bottom: 4px; }
+            .b-nav-item.active { color: var(--primary); font-weight: bold; }
+            .b-nav-item.active i { color: var(--accent); }
+            .b-badge { position: absolute; top: 5px; right: 25%; background: #e74c3c; color: white; font-size: 0.6rem; padding: 2px 5px; border-radius: 10px; }
+        }
+
+        /* Invoice & Edit Styles */
+        .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, 0.15); font-size: 16px; line-height: 24px; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #555; background: white; }
+        .invoice-box table { width: 100%; line-height: inherit; text-align: left; }
+        .invoice-box table td { padding: 5px; vertical-align: top; }
+        .invoice-box table tr td:nth-child(2) { text-align: right; }
+        .invoice-total-box { background: #f8f9fa; border-radius: 8px; padding: 15px; margin-top: 20px; text-align: right; }
+        .net-amount { font-size: 2rem; font-weight: bold; color: #2c3e50; }
+        .inkasso-row { background-color: #f0fff4 !important; border-left: 4px solid #2ecc71; }
+        @media print { body * { visibility: hidden; } #singleReportModal, #singleReportModal * { visibility: visible; } #singleReportModal { position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; padding: 0; background: white !important; } .modal-dialog { max-width: 100%; margin: 0; } .modal-content { border: none; box-shadow: none; } .modal-header, .modal-footer, .btn-close { display: none !important; } .invoice-box { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; } }
+    </style>
+</head>
+<body>
+<div id="admin-lock-screen"><div class="mb-4 text-center"><i class="fa fa-user-shield fa-4x mb-3 text-warning"></i><h3>ADMIN LOGIN</h3></div><input type="password" id="adminPinInput" class="pin-input" placeholder="PIN" inputmode="numeric"><button class="login-btn" onclick="checkAdminLogin()"><i class="fa fa-arrow-right"></i></button></div>
+
+<div class="mobile-header"><h6>SAM PACK ADMIN</h6></div>
+<div class="mobile-date-bar"><input type="date" id="mobileDateFilter" class="mobile-date-input" onchange="window.syncDate('mobile')"></div>
+
+<div class="sidebar" id="mainSidebar">
+    <div class="sidebar-header" style="padding: 30px 20px; text-align: center;"><h3 class="fw-bold m-0">SAM PACK</h3><small class="text-white-50">Admin V19.0</small></div>
+    <div class="nav-btn active" onclick="switchView('dash')" id="d-dash"><i class="fa fa-chart-pie"></i> Dashboard</div>
+    <div class="nav-btn" onclick="switchView('import')" id="d-import"><i class="fa fa-cloud-upload"></i> Import</div>
+    <div class="nav-btn" onclick="switchView('team')" id="d-team"><i class="fa fa-users-gear"></i> Team</div>
+    <div class="nav-btn" onclick="switchView('alerts')" id="d-alerts"><i class="fa fa-bell"></i> Meldungen <span class="badge rounded-pill bg-danger ms-auto" id="menuAlertBadge" style="display:none">0</span></div>
+    <div class="history-box"><label><i class="fa fa-calendar-alt"></i> ZEITREISE</label><div class="date-ctrl"><input type="date" id="globalDateFilter" onchange="window.syncDate('desktop')"></div><div class="text-center mt-2 small text-white-50" id="dateStatusText">Heute</div></div>
+</div>
+
+<div class="main-content">
+    <div id="view-dash">
+        <div class="dash-header-mobile">
+            <h4 class="fw-bold m-0" id="dashTitle">Dashboard</h4>
+            <div class="dash-actions-mobile">
+                <button class="btn btn-dark" onclick="window.openReportList('driver')"><i class="fa fa-car"></i> Fahrer</button>
+                <button class="btn btn-outline-dark" onclick="window.openReportList('lager')"><i class="fa fa-boxes"></i> Lager</button>
+                <button class="btn btn-success" onclick="window.newManualOrder()"><i class="fa fa-plus"></i> Neu</button>
+                <button class="btn btn-primary" onclick="window.showCashReport()"><i class="fa fa-wallet"></i> Kasse</button>
+                <button class="btn btn-warning" onclick="window.showSummary()"><i class="fa fa-list"></i> Liste</button>
+            </div>
+            <div class="search-container"><i class="fa fa-search search-icon"></i><input type="text" id="globalSearch" class="search-input" placeholder="Suchen (Kunde, Fahrer...)" onkeyup="window.renderDash()"></div>
+            <div class="mobile-total-bar"><span id="mobileCountDisplay"><i class="fa fa-boxes"></i> 0 Aufträge</span><span class="fw-bold" id="mobileTotalDisplay">0.00 CHF</span></div>
+        </div>
+
+        <div class="card-box p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="mainTable">
+                    <thead class="table-light"><tr><th id="thKunde">Kunde / Details</th><th>Fahrer</th><th>Status</th><th>Total (<span id="desktopTotalDisplay">0.00</span>)</th><th class="text-end">Aktion</th></tr></thead>
+                    <tbody id="dashTable"></tbody>
+                </table>
+            </div>
+            <div id="emptyDash" class="text-center p-5 text-muted d-none"><i class="fa fa-folder-open fa-3x mb-3 opacity-25"></i><p>Keine Daten.</p></div>
+        </div>
+    </div>
+    <div id="view-alerts" class="d-none"><h4 class="fw-bold mb-4">Meldungen</h4><div id="alertsContainer"></div><div id="noAlerts" class="text-center text-muted mt-5 d-none"><i class="fa fa-check-circle fa-4x text-success mb-3 opacity-25"></i><h5>Alles in Ordnung</h5></div></div>
+    <div id="view-import" class="d-none"><h4 class="fw-bold mb-4">Import PDF</h4><div class="card-box text-center py-5" onclick="document.getElementById('pdfIn').click()" style="cursor:pointer; border: 2px dashed #ccc;"><i class="fa fa-file-pdf fa-3x text-danger mb-3"></i><h5>PDF hier klicken</h5><input type="file" id="pdfIn" hidden multiple accept="application/pdf"></div></div>
+    <div id="view-team" class="d-none"><h4 class="fw-bold mb-4">Team Management</h4><div class="row g-3"><div class="col-md-3"><div class="card-box border-top border-4 border-primary h-100"><h6 class="fw-bold text-primary mb-3">Fahrer</h6><div class="input-group mb-3"><input id="drvName" class="form-control" placeholder="Name"><input id="drvPin" class="form-control" placeholder="PIN" style="width:70px"><button onclick="addDrv()" class="btn btn-primary">+</button></div><ul id="drvList" class="list-group list-group-flush small"></ul></div></div><div class="col-md-3"><div class="card-box border-top border-4 border-warning h-100"><h6 class="fw-bold text-warning mb-3">Lager</h6><div class="input-group mb-3"><input id="lagName" class="form-control" placeholder="Name"><input id="lagPin" class="form-control" placeholder="PIN" style="width:70px"><button onclick="addLag()" class="btn btn-warning">+</button></div><ul id="lagList" class="list-group list-group-flush small"></ul></div></div><div class="col-md-3"><div class="card-box border-top border-4 border-success h-100"><h6 class="fw-bold text-success mb-3">Fahrzeuge</h6><div class="input-group mb-3"><input id="vehPlate" class="form-control" placeholder="Kennzeichen"><button onclick="addVeh()" class="btn btn-success">+</button></div><ul id="vehList" class="list-group list-group-flush small"></ul></div></div><div class="col-md-3 super-only"><div class="card-box border-top border-4 border-dark h-100 bg-light"><h6 class="fw-bold text-dark mb-3"><i class="fa fa-user-shield"></i> Administratoren</h6><div class="input-group mb-3"><input id="admName" class="form-control" placeholder="Name"><input id="admPin" class="form-control" placeholder="PIN" style="width:70px"><button onclick="addAdmin()" class="btn btn-dark">+</button></div><ul id="admList" class="list-group list-group-flush small"></ul></div></div></div></div>
+</div>
+
+<div class="bottom-nav">
+    <div class="b-nav-item active" onclick="switchView('dash')" id="mb-dash"><i class="fa fa-chart-pie"></i><span>Dash</span></div>
+    <div class="b-nav-item" onclick="switchView('import')" id="mb-import"><i class="fa fa-cloud-upload"></i><span>Import</span></div>
+    <div class="b-nav-item" onclick="switchView('team')" id="mb-team"><i class="fa fa-users-gear"></i><span>Team</span></div>
+    <div class="b-nav-item position-relative" onclick="switchView('alerts')" id="mb-alerts"><i class="fa fa-bell"></i><span>Alerts</span><span id="mobileAlertBadge" class="b-badge" style="display:none">0</span></div>
+</div>
+
+<div class="modal fade" id="manualModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-success text-white"><h5 class="modal-title">Neuer Auftrag</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="row g-2 mb-3"><div class="col-md-8"><input id="manCust" class="form-control" placeholder="Kundenname"></div><div class="col-md-4"><input id="manDate" type="date" class="form-control"></div></div><hr><h6>Artikel:</h6><div class="input-group mb-2"><input id="manQty" class="form-control" placeholder="Menge"><input id="manItem" class="form-control" placeholder="Artikelname"><input id="manPrice" class="form-control" placeholder="Preis" type="number" step="0.05"><button class="btn btn-outline-success" onclick="window.addManualItem()">+</button></div><ul id="manList" class="list-group mb-3"></ul><div class="text-end fw-bold">Total: <span id="manTotal">0.00</span> CHF</div></div><div class="modal-footer"><button class="btn btn-success w-100" onclick="window.saveManualOrder()">Speichern</button></div></div></div></div>
+
+<div class="modal fade" id="editModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-warning text-dark"><h5 class="modal-title"><i class="fa fa-pen"></i> Bearbeiten</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
+    <div class="mb-3"><label class="small text-muted">Kunde</label><input id="editCust" class="form-control fw-bold"></div>
+    <div class="mb-3"><label class="small text-muted">Fahrer</label><select id="editDriver" class="form-select"></select></div>
+    <hr>
+    <h6>Artikel / Positionen</h6>
+    <div id="editItemsList" class="mb-3"></div>
+    <div class="input-group mb-3 bg-light p-2 rounded"><input id="editNewQty" class="form-control form-control-sm" placeholder="Menge"><input id="editNewItem" class="form-control form-control-sm" placeholder="Artikel"><input id="editNewPrice" class="form-control form-control-sm" placeholder="Preis" type="number" step="0.05"><button class="btn btn-sm btn-success" onclick="addEditItem()">+</button></div>
+    <div class="d-flex justify-content-between align-items-center bg-warning bg-opacity-10 p-3 rounded"><span>Total Betrag (Automatisch):</span><h4 class="m-0 fw-bold" id="editTotalDisplay">0.00</h4></div>
+</div><div class="modal-footer"><button class="btn btn-warning w-100 fw-bold" onclick="saveEdit()">Änderungen Speichern</button></div></div></div></div>
+
+<div class="modal fade" id="invoiceModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header border-0"><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body bg-dark text-center p-0"><img id="imgContent" style="width:100%; height:auto;"></div></div></div></div>
+<div class="modal fade" id="itemsModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 id="itemTitle"></h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body p-3" id="itemBodyContainer"></div></div></div></div>
+<div class="modal fade" id="summaryModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-warning text-dark"><h5>Packliste (Total)</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><table class="table mb-0 table-striped"><tbody id="summaryBody"></tbody></table></div></div></div></div>
+<div class="modal fade" id="cashModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5>Kassensturz (Total)</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><ul id="cashDetails" class="list-group mb-3"></ul><div class="text-center"><h2 class="fw-bold text-success" id="cashTotalVal"></h2><p id="cardTotalVal" class="text-muted"></p></div></div></div></div></div>
+<div class="modal fade" id="reportListModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-dark text-white"><h5 class="modal-title" id="reportListTitle">Reports</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="d-flex justify-content-between align-items-center mb-3"><label class="fw-bold">Datum:</label><input type="date" id="reportDateFilter" class="form-control w-auto" onchange="window.filterReports()"></div><div class="list-group" id="reportListContainer"></div></div></div></div></div>
+<div class="modal fade" id="singleReportModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title">Vorschau</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-4 bg-light" id="singleReportBody"></div><div class="modal-footer"><button class="btn btn-primary w-100" onclick="window.print()"><i class="fa fa-print"></i> PDF / Drucken</button></div></div></div></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, doc, deleteDoc, onSnapshot, query, orderBy, where, writeBatch, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    const db = getFirestore(initializeApp({ apiKey: "AIzaSyCY9TmJwzoJRWFTAjhDFBD0eFMR4YKTHJQ", projectId: "listapp-96713" }));
+    let currentUserRole=''; (async()=>{const s=await getDocs(collection(db,"admin_users")); if(s.empty) await addDoc(collection(db,"admin_users"),{name:"Super Admin",pin:"9999",role:"super_admin"});})();
+    window.checkAdminLogin=async()=>{const p=document.getElementById('adminPinInput').value; if(!p)return; const q=query(collection(db,"admin_users"),where("pin","==",p)); const s=await getDocs(q); if(!s.empty){const u=s.docs[0].data(); currentUserRole=u.role; document.getElementById('admin-lock-screen').style.display='none'; if(currentUserRole==='super_admin')document.querySelectorAll('.super-only').forEach(e=>e.style.display='block');}else{alert("Falscher PIN!");}};
+    let gOrders=[], gDrivers=[], allReports=[], currentReportType='driver', manualItems=[], editingItems=[], editingId=null; let selectedDate=new Date().toISOString().split('T')[0]; 
+    document.getElementById('globalDateFilter').value=selectedDate; document.getElementById('mobileDateFilter').value=selectedDate;
+
+    window.syncDate = (src) => {
+        if(src === 'mobile') selectedDate = document.getElementById('mobileDateFilter').value;
+        else selectedDate = document.getElementById('globalDateFilter').value;
+        document.getElementById('globalDateFilter').value = selectedDate; document.getElementById('mobileDateFilter').value = selectedDate;
+        document.getElementById('dateStatusText').innerText=(selectedDate===new Date().toISOString().split('T')[0])?"Heute":selectedDate; 
+        window.renderDash();
+    };
+    window.switchView=(id)=>{
+        document.querySelectorAll('[id^="view-"]').forEach(e=>e.classList.add('d-none')); document.getElementById('view-'+id).classList.remove('d-none'); 
+        document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active')); const dBtn = document.getElementById('d-'+id); if(dBtn) dBtn.classList.add('active');
+        document.querySelectorAll('.b-nav-item').forEach(e=>e.classList.remove('active')); const mBtn = document.getElementById('mb-'+id); if(mBtn) mBtn.classList.add('active');
+        if(id==='dash')window.renderDash();
+    };
+
+    onSnapshot(query(collection(db,"alerts"),orderBy("createdAt","desc")),s=>{const c=document.getElementById('alertsContainer'); c.innerHTML=''; let i=0; s.forEach(d=>{i++; const a=d.data(); c.innerHTML+=`<div class="alert-item" style="background:white;padding:15px;border-left:5px solid #f1c40f;margin-bottom:10px;display:flex;justify-content:space-between;"><div><strong>${a.item}</strong>: ${a.msg}<br><small>${a.from} | ${new Date(a.createdAt).toLocaleString()}</small></div><button class="btn btn-sm btn-outline-danger" onclick="window.delDoc('alerts','${d.id}')">OK</button></div>`;}); const b=document.getElementById('menuAlertBadge'); const mb=document.getElementById('mobileAlertBadge'); if(i>0){ b.innerText=i; b.style.display='inline-block'; mb.innerText=i; mb.style.display='block'; document.getElementById('noAlerts').classList.add('d-none'); } else{ b.style.display='none'; mb.style.display='none'; document.getElementById('noAlerts').classList.remove('d-none'); }});
+    onSnapshot(query(collection(db,"orders"),orderBy("createdAt","desc")),s=>{gOrders=[];s.forEach(d=>gOrders.push({id:d.id,...d.data()}));window.renderDash();});
+    onSnapshot(query(collection(db,"driver_daily_reports"),orderBy("date","desc")), s=>{allReports=[]; s.forEach(d=>allReports.push({id:d.id,...d.data()}));});
+    onSnapshot(collection(db,"drivers"),s=>{gDrivers=[];const l=document.getElementById('drvList');l.innerHTML='';s.forEach(d=>{gDrivers.push({id:d.id,...d.data()});l.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${d.data().name} <span class="text-danger" style="cursor:pointer" onclick="window.delDoc('drivers','${d.id}')">×</span></li>`;});window.renderDash();});
+    onSnapshot(collection(db,"warehouse_users"),s=>{const l=document.getElementById('lagList');l.innerHTML='';s.forEach(d=>l.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${d.data().name} <span class="text-danger" style="cursor:pointer" onclick="window.delDoc('warehouse_users','${d.id}')">×</span></li>`);});
+    onSnapshot(collection(db,"vehicles"),s=>{const l=document.getElementById('vehList');l.innerHTML='';s.forEach(d=>l.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${d.data().plate} <span class="text-danger" style="cursor:pointer" onclick="window.delDoc('vehicles','${d.id}')">×</span></li>`);});
+    onSnapshot(collection(db,"admin_users"),s=>{const l=document.getElementById('admList');l.innerHTML='';s.forEach(d=>l.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${d.data().name} <span class="text-danger" style="cursor:pointer" onclick="window.delDoc('admin_users','${d.id}')">×</span></li>`);});
+    
+    window.renderDash=()=>{
+        const tb=document.getElementById('dashTable'); tb.innerHTML=''; 
+        let doVs=`<option value="">-- Frei --</option>`; gDrivers.forEach(d=>doVs+=`<option value="${d.name}">${d.name}</option>`); 
+        const search = document.getElementById('globalSearch').value.toLowerCase();
+        let fo = gOrders.filter(o=>o.deliveryDate===selectedDate);
+        if(search.length > 0) fo = fo.filter(o => (o.customerName||'').toLowerCase().includes(search) || (o.assignedDriver||'').toLowerCase().includes(search) || (o.totalAmount||'').toString().includes(search));
+        let currentTotal = 0; fo.forEach(o => currentTotal += parseFloat(o.finalAmount || o.totalAmount || 0));
+        document.getElementById('desktopTotalDisplay').innerText = currentTotal.toFixed(2);
+        document.getElementById('mobileTotalDisplay').innerText = currentTotal.toFixed(2) + " CHF";
+        document.getElementById('mobileCountDisplay').innerHTML = `<i class="fa fa-boxes"></i> ${fo.length} Aufträge`;
+        document.getElementById('thKunde').innerHTML = `Kunde / Details <span class="badge bg-secondary rounded-pill small ms-1">${fo.length}</span>`;
+        if(fo.length===0)document.getElementById('emptyDash').classList.remove('d-none'); else document.getElementById('emptyDash').classList.add('d-none'); 
+        fo.forEach(o=>{
+            let stT='Offen',stC=''; let priceFlag = '';
+            if(o.status === 'Delivered' && o.finalAmount) { const diff = Math.abs(parseFloat(o.finalAmount) - parseFloat(o.totalAmount || 0)); if(diff > 0.05) priceFlag = '<span class="badge bg-warning text-dark ms-1"><i class="fa fa-pen"></i></span>'; }
+            if(o.status==='Packed') stT=`<span class="status-badge st-packed">Gepackt</span>`; else if(o.status==='Returned'){stT=`<span class="status-badge st-returned">Retour</span>`;stC='bg-danger bg-opacity-10';} else if(o.status==='Delivered'){stT=`<span class="status-badge st-delivered">${o.paymentMethod||'Geliefert'}</span>${priceFlag}`;stC='bg-success bg-opacity-10';} 
+            let rdo=doVs.replace(`value="${o.assignedDriver||""}"`,`value="${o.assignedDriver||""}" selected`); 
+            let eye=o.invoiceImg?`<button class="btn btn-sm btn-primary" onclick="window.showImg('${o.id}')"><i class="fa fa-eye"></i></button>`:''; 
+            tb.innerHTML+=`<tr class="${stC}"><td><div class="small">${o.deliveryDate}</div><strong>${o.customerName.split('|')[0]}</strong><br><small>${o.items?.length||0} Pos.</small></td><td><select class="form-select form-select-sm" onchange="window.assignDriver('${o.id}',this.value)" ${o.status==='Delivered'?'disabled':''}>${rdo}</select></td><td>${stT}</td><td>${parseFloat(o.finalAmount||o.totalAmount||0).toFixed(2)}</td><td class="text-end"><button class="btn btn-sm btn-info" onclick="window.showItems('${o.id}')"><i class="fa fa-list"></i></button> ${eye} <button class="btn btn-sm btn-warning" onclick="window.openEdit('${o.id}')"><i class="fa fa-pen"></i></button> <button class="btn btn-sm btn-danger" onclick="window.delDoc('orders','${o.id}')"><i class="fa fa-trash"></i></button></td></tr>`;
+        });
+    };
+    
+    // EDIT LOGIC
+    window.openEdit=(id)=>{
+        const o = gOrders.find(x=>x.id===id); if(!o)return;
+        editingId = id; editingItems = JSON.parse(JSON.stringify(o.items || [])); // Clone
+        document.getElementById('editCust').value = o.customerName.split('|')[0];
+        const drvSel = document.getElementById('editDriver');
+        drvSel.innerHTML = '<option value="">-- Frei --</option>';
+        gDrivers.forEach(d => drvSel.innerHTML += `<option value="${d.name}" ${d.name===o.assignedDriver?'selected':''}>${d.name}</option>`);
+        renderEditItems();
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    };
+    function renderEditItems(){
+        const l = document.getElementById('editItemsList'); l.innerHTML='';
+        let total = 0;
+        editingItems.forEach((i, idx)=>{
+            const lineTotal = (parseFloat(i.price)||0); // Assumes item stored as total price line
+            total += lineTotal;
+            l.innerHTML += `<div class="d-flex gap-2 mb-2 align-items-center">
+                <input class="form-control form-control-sm" style="width:60px" value="${i.qty}" onchange="updateEItem(${idx}, 'qty', this.value)">
+                <input class="form-control form-control-sm" value="${i.name}" onchange="updateEItem(${idx}, 'name', this.value)">
+                <input class="form-control form-control-sm" style="width:80px" type="number" step="0.05" value="${i.price}" onchange="updateEItem(${idx}, 'price', this.value)">
+                <button class="btn btn-sm btn-outline-danger" onclick="remEItem(${idx})">×</button>
+            </div>`;
+        });
+        document.getElementById('editTotalDisplay').innerText = total.toFixed(2);
+    }
+    window.updateEItem=(idx, field, val)=>{ if(field==='price') val=parseFloat(val)||0; editingItems[idx][field]=val; renderEditItems(); };
+    window.remEItem=(idx)=>{ editingItems.splice(idx,1); renderEditItems(); };
+    window.addEditItem=()=>{
+        const q=document.getElementById('editNewQty').value, n=document.getElementById('editNewItem').value, p=parseFloat(document.getElementById('editNewPrice').value)||0;
+        if(n){ editingItems.push({qty:q, name:n, price:p, total:p}); document.getElementById('editNewQty').value=''; document.getElementById('editNewItem').value=''; document.getElementById('editNewPrice').value=''; renderEditItems(); }
+    };
+    window.saveEdit=async()=>{
+        if(!editingId) return;
+        const total = parseFloat(document.getElementById('editTotalDisplay').innerText);
+        const drv = document.getElementById('editDriver').value;
+        const cust = document.getElementById('editCust').value;
+        await updateDoc(doc(db, "orders", editingId), { customerName: cust, assignedDriver: drv, items: editingItems, totalAmount: total });
+        bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+    };
+
+    window.assignDriver=async(id,n)=>await updateDoc(doc(db,"orders",id),{assignedDriver:n}); window.delDoc=async(c,id)=>{if(confirm("Löschen?"))deleteDoc(doc(db,c,id));};
+    window.addDrv=async()=>{const n=document.getElementById('drvName').value,p=document.getElementById('drvPin').value;if(n&&p)await addDoc(collection(db,"drivers"),{name:n,pin:p});}; window.addLag=async()=>{const n=document.getElementById('lagName').value,p=document.getElementById('lagPin').value;if(n&&p)await addDoc(collection(db,"warehouse_users"),{name:n,pin:p});}; window.addVeh=async()=>{const p=document.getElementById('vehPlate').value;if(p)await addDoc(collection(db,"vehicles"),{plate:p});}; window.addAdmin=async()=>{const n=document.getElementById('admName').value,p=document.getElementById('admPin').value;if(n&&p)await addDoc(collection(db,"admin_users"),{name:n,pin:p,role:'staff'});};
+    window.newManualOrder=()=>{manualItems=[]; document.getElementById('manCust').value=''; document.getElementById('manDate').valueAsDate=new Date(); renderManualItems(); new bootstrap.Modal(document.getElementById('manualModal')).show();}; window.addManualItem=()=>{const q=document.getElementById('manQty').value,n=document.getElementById('manItem').value,p=parseFloat(document.getElementById('manPrice').value)||0;if(q&&n){manualItems.push({qty:q,name:n,price:p,total:p});renderManualItems();}}; function renderManualItems(){const l=document.getElementById('manList');l.innerHTML='';let t=0;manualItems.forEach((i,x)=>{t+=i.price;l.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${i.qty} ${i.name} <span>${i.price.toFixed(2)}</span> <span class="text-danger" onclick="manualItems.splice(${x},1);renderManualItems()">×</span></li>`;});document.getElementById('manTotal').innerText=t.toFixed(2);} window.saveManualOrder=async()=>{const c=document.getElementById('manCust').value,d=document.getElementById('manDate').value,t=parseFloat(document.getElementById('manTotal').innerText);if(c&&manualItems.length>0){await addDoc(collection(db,"orders"),{customerName:c,deliveryDate:d,items:manualItems,totalAmount:t,status:'Open',createdAt:new Date().toISOString()});bootstrap.Modal.getInstance(document.getElementById('manualModal')).hide();}};
+    window.showItems=(id)=>{const o=gOrders.find(x=>x.id===id);if(!o)return;document.getElementById('itemTitle').innerText=o.customerName.split('|')[0];let h=`<table class="table table-striped mb-3"><tbody class="small">`;o.items.forEach(i=>h+=`<tr><td>${i.qty}</td><td>${i.name}</td><td class="text-end">${i.price||0}</td></tr>`);h+=`</tbody></table>`;if(o.deliveryNote)h+=`<div class="bg-light p-2 mb-2 border"><strong>Note:</strong> ${o.deliveryNote}</div>`;if(o.missingItems)h+=`<div class="bg-warning p-2 mb-2 border"><strong>Fehlmengen:</strong> ${o.missingItems.map(m=>m.qty+' '+m.name).join(', ')}</div>`;document.getElementById('itemBodyContainer').innerHTML=h;new bootstrap.Modal(document.getElementById('itemsModal')).show();}; window.showImg=(id)=>{const o=gOrders.find(x=>x.id===id);if(o&&o.invoiceImg){document.getElementById('imgContent').src=o.invoiceImg;new bootstrap.Modal(document.getElementById('invoiceModal')).show();}};
+    window.openReportList=async(t)=>{currentReportType=t; document.getElementById('reportListTitle').innerText=(t==='driver'?'Fahrer':'Lager')+' Reports'; document.getElementById('reportDateFilter').value=selectedDate; const c=(t==='driver')?"driver_daily_reports":"daily_reports"; const s=await getDocs(query(collection(db,c),orderBy("date","desc"))); allReports=[]; s.forEach(d=>allReports.push({id:d.id,...d.data()})); window.filterReports(); new bootstrap.Modal(document.getElementById('reportListModal')).show();};
+    window.filterReports=()=>{const f=document.getElementById('reportDateFilter').value; const l=document.getElementById('reportListContainer'); l.innerHTML=''; const fl=allReports.filter(r=>r.date.startsWith(f)); if(fl.length===0){l.innerHTML='<div class="text-center p-4 text-muted">Keine Reports.</div>';return;} fl.forEach(r=>{let tt=currentReportType==='driver'?`${r.driver} (${r.vehicle})`:`${r.by} (Lager)`; l.innerHTML+=`<div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"><div><div class="fw-bold">${tt}</div><div class="small text-muted">${new Date(r.date).toLocaleTimeString()}</div></div><div class="d-flex gap-2"><button class="btn btn-sm btn-primary" onclick="window.viewSingleReport('${r.id}')"><i class="fa fa-eye"></i></button><button class="btn btn-sm btn-outline-danger" onclick="window.delReport('${r.id}')"><i class="fa fa-trash"></i></button></div></div>`;});};
+    window.delReport=async(id)=>{if(confirm("Löschen?")){const c=(currentReportType==='driver')?"driver_daily_reports":"daily_reports"; await deleteDoc(doc(db,c,id)); allReports=allReports.filter(r=>r.id!==id); window.filterReports();}};
+    window.viewSingleReport=(id)=>{const r=allReports.find(x=>x.id===id); if(!r)return; let h=''; if(currentReportType==='driver'){let rw=''; if(r.details) r.details.forEach(d=>rw+=`<tr><td>${d.name}</td><td>${d.amount.toFixed(2)}</td></tr>`); let inkassoHtml = ''; let inkassoVal = r.totalInkasso || 0; if (r.inkasso && r.inkasso.length > 0) { inkassoHtml += `<tr class="inkasso-row"><td colspan="2"><strong><i class="fa fa-plus-circle"></i> Inkasso / Alte Rechnungen</strong></td></tr>`; r.inkasso.forEach(i => { inkassoHtml += `<tr style="background:#f0fff4; color:#146c43;"><td><small>[${i.nr||'-'}]</small> ${i.name}</td><td>+ ${parseFloat(i.amount).toFixed(2)}</td></tr>`; }); } const grandTotalCash = r.totalCash + inkassoVal; h=`<div class="invoice-box"><div class="invoice-header-bar d-flex justify-content-between align-items-center"><div><h2 class="invoice-title fw-bold">SAM PACK</h2><div class="text-muted small">Logistics & Delivery</div></div><div class="text-end"><div class="fw-bold text-dark">TAGESBERICHT</div><div>${new Date(r.date).toLocaleDateString()}</div><div class="small text-muted">${new Date(r.date).toLocaleTimeString()}</div></div></div><div class="mb-4 d-flex justify-content-between"><div><strong>Fahrer:</strong><br>${r.driver}</div><div class="text-end"><strong>Fahrzeug:</strong><br>${r.vehicle||'-'}</div></div><table class="table table-sm"><thead><tr style="border-bottom: 2px solid #333;"><th>Beschreibung</th><th class="text-end">Betrag (CHF)</th></tr></thead><tbody>${rw}${inkassoHtml}</tbody></table><div class="row mt-4"><div class="col-6"><div class="p-3 bg-light rounded small"><strong>Ausgaben:</strong><br>Tanken: -${r.expFuel || 0}<br>Sonstiges: -${r.expOther || 0}<br><em>${r.expNote || ''}</em></div><div class="mt-3 text-center"><img src="${r.signature}" style="height:60px; opacity:0.7;"><div style="border-top:1px solid #ccc; width:100px; margin:5px auto 0;">Unterschrift</div></div></div><div class="col-6"><div class="invoice-total-box"><div class="d-flex justify-content-between mb-2"><span>Total Bar (Verkauf):</span><strong>${r.totalCash.toFixed(2)}</strong></div><div class="d-flex justify-content-between mb-2 text-success"><span>Total Inkasso:</span><strong>${inkassoVal.toFixed(2)}</strong></div><hr><div class="d-flex justify-content-between mb-2"><span>Zwischentotal:</span><strong>${grandTotalCash.toFixed(2)}</strong></div><div class="d-flex justify-content-between text-danger small"><span>Abzug (Ausgaben):</span><span>- ${(parseFloat(r.expFuel||0) + parseFloat(r.expOther||0)).toFixed(2)}</span></div><hr><div class="d-flex justify-content-between align-items-center"><span class="fw-bold text-dark">NETTO (Abgabe)</span><span class="net-amount">${r.netHandover}</span></div></div></div></div></div>`;} else {h=`<div class="invoice-box"><h3>LAGER PROTOKOLL</h3><div>Mitarbeiter: <strong>${r.by}</strong> | ${new Date(r.date).toLocaleString()}</div><div class="mt-3 border p-3">${r.summary}</div><img src="${r.signature}" style="height:80px;margin-top:20px;"></div>`;} document.getElementById('singleReportBody').innerHTML=h; new bootstrap.Modal(document.getElementById('singleReportModal')).show();};
+    window.showCashReport=()=>{let c=0, k=0; const dc={}; gOrders.forEach(o=>{if(o.deliveryDate===selectedDate && o.status==='Delivered'){const a=parseFloat(o.finalAmount||o.totalAmount); if(o.paymentMethod==='Bar'){c+=a; const d=o.deliveredBy||"Unbekannt"; dc[d]=(dc[d]||0)+a;} else if(o.paymentMethod==='Card') k+=a;}}); const dayReports = allReports.filter(r => r.date.startsWith(selectedDate)); dayReports.forEach(r => { if(r.totalInkasso && r.totalInkasso > 0) { const driverName = r.driver; c += r.totalInkasso; dc[driverName] = (dc[driverName]||0) + r.totalInkasso; } }); const ul=document.getElementById('cashDetails'); ul.innerHTML=''; Object.keys(dc).forEach(d=>{ul.innerHTML+=`<li class="list-group-item d-flex justify-content-between"><span>${d}</span><strong>${dc[d].toFixed(2)}</strong></li>`;}); document.getElementById('cashTotalVal').innerText=`Total Bar: ${c.toFixed(2)}`; document.getElementById('cardTotalVal').innerText=`Total Karte: ${k.toFixed(2)}`; new bootstrap.Modal(document.getElementById('cashModal')).show();};
+    window.showSummary=()=>{const t={}; gOrders.forEach(o=>{if(o.deliveryDate===selectedDate&&o.status!=='Delivered'&&o.status!=='Returned'&&o.items){o.items.forEach(i=>{const n=i.name.trim(); const v=parseFloat(i.qty.toString().replace(/,/g,'.'))||0; const u=i.qty.replace(/[0-9.]/g,'').trim(); if(!t[n])t[n]={c:0,u:u}; t[n].c+=v;});}}); document.getElementById('summaryBody').innerHTML=Object.keys(t).sort().map(k=>`<tr><td><b>${parseFloat(t[k].c.toFixed(2))} ${t[k].u}</b></td><td>${k}</td></tr>`).join(''); new bootstrap.Modal(document.getElementById('summaryModal')).show();};
+    const pdfIn=document.getElementById('pdfIn'); if(pdfIn)pdfIn.addEventListener('change',async e=>{const batch=writeBatch(db); let c=0; for(let f of e.target.files){try{const b=await f.arrayBuffer(),pdf=await pdfjsLib.getDocument(b).promise,p=await pdf.getPage(1); let txt=(await p.getTextContent()).items.map(i=>i.str).join('|'); txt=txt.replace(/(\d+['’]?\d+\.\d{2})(Total|MwSt|Betrag|Rechnung|CHF)/gi,'$1 | $2'); const cvs=document.createElement('canvas'),ctx=cvs.getContext('2d'),vp=p.getViewport({scale:1.5}); cvs.width=vp.width;cvs.height=vp.height; await p.render({canvasContext:ctx,viewport:vp}).promise; const items=[]; const tokens=txt.split('|').map(t=>t.trim()).filter(t=>t.length>0); const isMoney=s=>/^[0-9'’]+\.\d{2}$/.test(s); for(let i=0;i<tokens.length-1;i++){let cc=tokens[i].replace(/['’]/g,''),cn=tokens[i+1].replace(/['’]/g,''); if(isMoney(cc)&&isMoney(cn)){const pr=parseFloat(cc),to=parseFloat(cn); if(i>=2){let qt=tokens[i-1],nm=tokens[i-2]; if(nm.match(/^[1-9]\d{0,1}\s/))nm=nm.replace(/^[1-9]\d{0,1}\s/,''); if(nm.length>2&&!nm.includes("Total")&&!nm.includes("MwSt")){items.push({name:nm,qty:qt,price:pr,total:to});}}}} const tot=txt.match(/Betrag inkl\. MWST.*?([\d'’\.]+\d{2})/); const dat=txt.match(/Datum:.*?(\d{2}\.\d{2}\.\d{4})/); let dISO=new Date().toISOString().split('T')[0]; if(dat){const[d,m,y]=dat[1].split('.');dISO=`${y}-${m}-${d}`;} if(items.length>0){batch.set(doc(collection(db,"orders")),{customerName:tokens[0].split('|')[0],deliveryDate:dISO,items:items,totalAmount:tot?parseFloat(tot[1].replace(/['’]/g,'')):0,status:'Open',createdAt:new Date().toISOString(),invoiceImg:cvs.toDataURL('image/jpeg',0.8)}); c++;}}catch(x){console.error(x);}} if(c>0){await batch.commit();window.renderDash();alert(c+" importiert!");}});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

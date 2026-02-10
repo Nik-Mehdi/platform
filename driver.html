@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sam Pack Driver V14.0 (Stop Numbers)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f0f2f5; --card-bg: #ffffff; --text: #212529; --border: #eee; }
+        body.dark-mode { --primary: #ecf0f1; --bg: #121212; --card-bg: #1e1e1e; --text: #f8f9fa; --border: #333; }
+        
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; -webkit-user-select: none; user-select: none; padding-bottom: 80px; transition: 0.3s; }
+        .app-container { max-width: 1000px; margin: 0 auto; min-height: 100vh; background: var(--card-bg); position: relative; display: flex; flex-direction: column; }
+        @media (min-width: 992px) { .orders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; } }
+        
+        /* LOGIN */
+        #login-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #2c3e50; color: white; position: fixed; top: 0; left: 0; width: 100%; z-index: 2000; }
+        .pin-display { font-size: 2.5rem; letter-spacing: 15px; text-align: center; margin-bottom: 30px; background: transparent; border: none; border-bottom: 2px solid rgba(255,255,255,0.3); color: white; width: 220px; outline: none; }
+        #numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 300px; }
+        .pin-btn { width: 75px; height: 75px; border-radius: 50%; font-size: 1.8rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; }
+        .pin-btn:active { background: #e67e22; transform: scale(0.9); }
+
+        /* UI ELEMENTS */
+        .navbar-custom { background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .date-floater { background: var(--bg); padding: 10px 15px; border-radius: 8px; margin: 15px 0; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
+        .date-floater input { border: none; background: transparent; font-weight: bold; color: var(--text); text-align: right; outline: none; }
+        
+        .order-card { background: var(--card-bg); border-radius: 12px; padding: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; position: relative; border: 1px solid var(--border); cursor: pointer; margin-bottom: 15px; }
+        .card-header-custom { padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; color: white; }
+        .bg-open { background: linear-gradient(135deg, #f39c12, #d35400); }
+        .bg-done { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+        .bg-pool { background: linear-gradient(135deg, #34495e, #2c3e50); } 
+        .bg-ret { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+        
+        /* Stop Number Badge */
+        .stop-badge { background: white; color: #2c3e50; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; margin-right: 10px; flex-shrink: 0; }
+
+        .price-badge { background: white; color: #212529; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; min-width: 80px; text-align: center; }
+        body.dark-mode .price-badge { background: #333; color: #f1c40f; border: 1px solid #555; }
+        
+        .price-input { font-size: 2.5rem; font-weight: bold; color: #2c3e50; border: none; background: transparent; text-align: center; width: 100%; outline: none; border-bottom: 2px dashed #ccc; }
+        canvas { border: 2px dashed #bdc3c7; border-radius: 12px; width: 100%; background: #fff; touch-action: none; }
+        
+        /* Loading Overlay */
+        #loadingOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; }
+    </style>
+</head>
+<body>
+
+<div id="loadingOverlay" class="d-none"><div class="spinner-border text-warning mb-3" style="width: 3rem; height: 3rem;"></div><h5 id="loadingText">Berechne Route...</h5></div>
+
+<div id="login-screen"><i class="fa fa-user-lock fa-3x mb-4 text-warning"></i><input type="password" id="pinInput" class="pin-display" readonly placeholder="••••"><div id="numpad"></div></div>
+
+<div class="app-container d-none" id="main-screen">
+    <div class="navbar-custom">
+        <div class="d-flex align-items-center gap-2">
+            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="fa fa-truck"></i></div>
+            <div><div class="small text-muted" style="line-height:1">Fahrer</div><div class="fw-bold" id="driverNameDisplay">...</div></div>
+        </div>
+        <div class="d-flex align-items-center">
+            <div class="theme-toggle p-2" onclick="toggleTheme()"><i class="fa fa-moon" id="themeIcon"></i></div>
+            <button class="btn btn-sm btn-outline-danger ms-2" onclick="location.reload()"><i class="fa fa-power-off"></i></button>
+        </div>
+    </div>
+    
+    <div class="px-3 pt-3">
+        <button class="btn btn-warning w-100 fw-bold mb-3 shadow-sm" onclick="optimizeRoute()">
+            <i class="fa fa-map-marked-alt me-2"></i> ROUTE OPTIMIEREN (AI)
+        </button>
+        
+        <div class="d-flex gap-2 mb-3"><button class="btn btn-dark fw-bold flex-grow-1" onclick="showLoadingList()"><i class="fa fa-clipboard-list me-2"></i> LADELISTE</button></div>
+        <input type="text" id="driverSearch" class="form-control mb-3" placeholder="🔍 Kunde suchen..." onkeyup="window.renderOrders()">
+        <div class="date-floater mt-0"><span class="fw-bold text-muted"><i class="fa fa-calendar-day me-2"></i>Datum:</span><input type="date" id="mainDateFilter" onchange="window.renderOrders()"></div>
+    </div>
+    
+    <div class="px-3 flex-grow-1">
+        <ul class="nav nav-pills nav-fill bg-light p-1 rounded-3 mb-3">
+            <li class="nav-item"><button class="nav-link active rounded-3 py-2 small fw-bold" onclick="filterOrders('mine')" id="tab-mine">Meine Route <span class="badge bg-danger ms-1" id="myRouteCount">0</span></button></li>
+            <li class="nav-item"><button class="nav-link rounded-3 py-2 small fw-bold" onclick="filterOrders('pool')" id="tab-pool">Pool</button></li>
+            <li class="nav-item"><button class="nav-link rounded-3 py-2 small fw-bold" onclick="filterOrders('done')" id="tab-done">Erledigt</button></li>
+        </ul>
+        
+        <div id="ordersList" class="orders-grid"></div>
+        <div id="emptyState" class="text-center text-muted mt-5 d-none"><i class="fa fa-road fa-3x mb-3 opacity-25"></i><p>Keine Aufträge.</p></div>
+        <div class="mt-4 mb-5 text-center" id="finishBtnContainer"><button class="btn btn-success w-100 py-3 shadow-sm fw-bold" onclick="openReportModal()"><i class="fa fa-flag-checkered me-2"></i> TAGESABSCHLUSS</button></div>
+    </div>
+</div>
+
+<div class="modal fade" id="loadingListModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-dark text-white"><h5 class="modal-title">Ladeliste</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><ul class="list-group list-group-flush" id="loadingListBody"></ul></div><div class="modal-footer"><button class="btn btn-dark w-100" data-bs-dismiss="modal">OK</button></div></div></div></div>
+<div class="modal fade" id="deliveryModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold" id="modalCustName">...</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="viewSuccess"><div class="text-center mb-3"><label class="small text-muted">BETRAG (CHF)</label><input type="number" id="modalTotalInput" class="price-input" step="0.05"></div><div class="row g-2 mb-3"><div class="col-4"><input type="radio" class="btn-check" name="payMethod" id="payCash" value="Bar" checked><label class="btn btn-outline-success w-100" for="payCash">Bar</label></div><div class="col-4"><input type="radio" class="btn-check" name="payMethod" id="payCard" value="Card"><label class="btn btn-outline-primary w-100" for="payCard">Karte</label></div><div class="col-4"><input type="radio" class="btn-check" name="payMethod" id="payInv" value="Rechnung"><label class="btn btn-outline-warning w-100" for="payInv">Rech.</label></div></div><textarea id="driverNote" class="form-control mb-3" rows="1" placeholder="Notiz..."></textarea><canvas id="sigPad" height="150"></canvas><div class="text-end mb-3"><small class="text-danger" onclick="clearSig('sigPad')">Clear Sign</small></div></div><div id="viewReturn" class="d-none"><div class="alert alert-danger">Nicht geliefert?</div><select id="returnReason" class="form-select mb-2"><option>Kunde nicht da</option><option>Geschlossen</option><option>Kein Geld</option><option>Verweigert</option></select></div><div id="modalItems" class="border-top pt-3 small"></div></div><div class="modal-footer"><button id="btnNotDelivered" class="btn btn-outline-danger" onclick="toggleReturnView(true)">Storno</button><button id="btnConfirm" class="btn btn-success flex-grow-1" onclick="finishOrder('Delivered')">OK</button><button id="btnConfirmRet" class="btn btn-danger flex-grow-1 d-none" onclick="finishOrder('Returned')">STORNIEREN</button></div></div></div></div>
+<div class="modal fade" id="reportModal" tabindex="-1"><div class="modal-dialog modal-fullscreen-md-down modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title">Tagesbericht</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="fw-bold small text-muted">DATUM:</label><input type="date" id="reportDate" class="form-control fw-bold" onchange="window.updateReportView()"></div><div class="mb-3"><label class="fw-bold small text-muted">FAHRZEUG:</label><select id="vehSelect" class="form-select"></select></div><div class="card bg-light border-0 mb-3"><div class="card-body d-flex justify-content-between align-items-center"><span>Total Bar:</span><strong class="text-success fs-4" id="repCashTotal">0.00</strong></div></div><input type="number" id="expFuel" class="form-control mb-2" placeholder="Tanken (CHF)" oninput="calcNet()"><input type="number" id="expOther" class="form-control mb-2" placeholder="Sonstiges (CHF)" oninput="calcNet()"><div class="text-center bg-light p-3 rounded"><small class="text-muted">ABZUGEBEN (NETTO)</small><h2 class="fw-bold text-dark m-0" id="netHandover">0.00</h2></div><h6 class="text-center mt-3 small text-muted">UNTERSCHRIFT</h6><canvas id="sigPadReport" height="120" style="border: 2px dashed #95a5a6; border-radius: 8px; width: 100%;"></canvas></div><div class="modal-footer"><button class="btn btn-success w-100 py-3 fw-bold" onclick="submitDailyReport()">Senden</button></div></div></div></div>
+<div class="modal fade" id="invoiceModal" tabindex="-1"><div class="modal-dialog modal-fullscreen"><div class="modal-content bg-dark"><div class="modal-header border-0"><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-0 d-flex align-items-center justify-content-center"><img id="fullInvoiceImg" style="max-width:100%; max-height:100vh;"></div></div></div></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, query, where, updateDoc, doc, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    
+    // FIREBASE KEY
+    const db = getFirestore(initializeApp({ apiKey: "AIzaSyCY9TmJwzoJRWFTAjhDFBD0eFMR4YKTHJQ", projectId: "listapp-96713" }));
+    
+    let currentUser = null, allOrders = [], currentFilter = 'mine', sigCanvas, sigCtx, isDrawing = false, currentOrderID = null;
+    let sortedOrderIds = [];
+
+    document.getElementById('mainDateFilter').value = new Date().toISOString().split('T')[0];
+    const numpad = document.getElementById('numpad'); [1,2,3,4,5,6,7,8,9,'C',0,'➜'].forEach(n => { const btn=document.createElement('div'); btn.className='pin-btn'; btn.innerHTML=n; if(n==='➜'){btn.style.background='#27ae60'; btn.onclick=()=>tryLogin(document.getElementById('pinInput').value);}else if(n==='C'){btn.style.background='#e74c3c'; btn.onclick=()=>document.getElementById('pinInput').value='';}else{btn.onclick=()=>document.getElementById('pinInput').value+=n;} numpad.appendChild(btn); });
+
+    async function tryLogin(pin) { if(!pin) return; const q = query(collection(db, "drivers"), where("pin", "==", pin)); const snap = await getDocs(q); if(!snap.empty) { currentUser = snap.docs[0].data(); currentUser.id = snap.docs[0].id; document.getElementById('driverNameDisplay').innerText = currentUser.name; document.getElementById('login-screen').classList.add('d-none'); document.getElementById('main-screen').classList.remove('d-none'); startLiveSync(); loadVehicles(); checkTheme(); } else { alert("Falscher PIN"); document.getElementById('pinInput').value = ''; } }
+    async function loadVehicles() { const s = await getDocs(collection(db, "vehicles")); const sel = document.getElementById('vehSelect'); sel.innerHTML = '<option value="">Fahrzeug wählen...</option>'; s.forEach(d => sel.innerHTML += `<option value="${d.data().plate}">${d.data().plate}</option>`); }
+    function startLiveSync() { onSnapshot(query(collection(db, "orders")), (snapshot) => { allOrders = []; snapshot.forEach(doc => allOrders.push({id: doc.id, ...doc.data()})); window.renderOrders(); }); }
+    window.filterOrders = (type) => { currentFilter = type; document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active')); document.getElementById('tab-'+type).classList.add('active'); window.renderOrders(); };
+    
+    window.renderOrders = () => { 
+        const list = document.getElementById('ordersList'); list.innerHTML = ''; 
+        const selectedDate = document.getElementById('mainDateFilter').value; 
+        const finishBtn = document.getElementById('finishBtnContainer'); 
+        const search = document.getElementById('driverSearch').value.toLowerCase(); 
+
+        let dateOrders = allOrders.filter(o => o.deliveryDate === selectedDate);
+        document.getElementById('myRouteCount').innerText = dateOrders.filter(o => o.assignedDriver === currentUser.name && o.status !== 'Delivered' && o.status !== 'Returned').length;
+
+        if(search) { dateOrders = dateOrders.filter(o => o.customerName.toLowerCase().includes(search)); }
+
+        let filtered = [];
+        if (currentFilter === 'mine') { 
+            filtered = dateOrders.filter(o => o.assignedDriver === currentUser.name && o.status !== 'Delivered' && o.status !== 'Returned'); 
+            finishBtn.style.display = 'block';
+            if(sortedOrderIds.length > 0) {
+                filtered.sort((a,b) => {
+                    const idxA = sortedOrderIds.indexOf(a.id);
+                    const idxB = sortedOrderIds.indexOf(b.id);
+                    if(idxA !== -1 && idxB !== -1) return idxA - idxB;
+                    if(idxA !== -1) return -1;
+                    if(idxB !== -1) return 1;
+                    return 0;
+                });
+            }
+        } else if (currentFilter === 'pool') { 
+            filtered = dateOrders.filter(o => !o.assignedDriver && o.status === 'Open'); 
+            finishBtn.style.display = 'none'; 
+        } else { 
+            filtered = dateOrders.filter(o => o.assignedDriver === currentUser.name && (o.status === 'Delivered' || o.status === 'Returned')); 
+            finishBtn.style.display = 'none'; 
+        } 
+        
+        if(filtered.length === 0) { document.getElementById('emptyState').classList.remove('d-none'); return; } 
+        document.getElementById('emptyState').classList.add('d-none'); 
+        
+        // --- UPDATED RENDER LOOP WITH COUNTER ---
+        filtered.forEach((o, index) => { 
+            let actionBtn = ''; let headerClass = 'bg-open'; 
+            let numBadge = ''; // Start empty
+
+            if (currentFilter === 'pool') { 
+                headerClass = 'bg-pool'; 
+                actionBtn = `<button class="btn btn-sm btn-light text-dark fw-bold" onclick="event.stopPropagation(); claimOrder('${o.id}')"><i class="fa fa-plus"></i> Übernehmen</button>`; 
+            } 
+            else if (currentFilter === 'done') { 
+                headerClass = o.status === 'Delivered' ? 'bg-done' : 'bg-ret'; 
+            } 
+            else { 
+                // ONLY FOR "MINE"
+                actionBtn = `<span class="price-badge">${parseFloat(o.totalAmount).toFixed(2)}</span>`; 
+                // ADD NUMBER BADGE HERE
+                numBadge = `<div class="stop-badge">${index + 1}</div>`;
+            } 
+            
+            const fullAddr = o.customerName.split('|')[1] || o.customerName.split('|')[0]; 
+            const routeBtn = `<a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fullAddr)}" target="_blank" class="btn btn-sm btn-outline-secondary ms-2" onclick="event.stopPropagation()"><i class="fa fa-map-marker-alt"></i></a>`; 
+            const eyeBtn = o.invoiceImg ? `<button class="btn btn-sm btn-outline-primary ms-2" onclick="event.stopPropagation(); showInvoice('${o.id}')"><i class="fa fa-eye"></i></button>` : ''; 
+            
+            list.innerHTML += `
+            <div class="order-card" onclick="${currentFilter === 'mine' ? `openModal('${o.id}')` : ''}">
+                <div class="card-header-custom ${headerClass}">
+                    <div class="d-flex align-items-center" style="max-width: 70%">
+                        ${numBadge}
+                        <h6 class="m-0 text-truncate">${o.customerName.split('|')[0]}</h6>
+                    </div>
+                    <div>${actionBtn}</div>
+                </div>
+                <div class="p-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted d-block text-truncate" style="max-width:200px">${fullAddr}</small>
+                        <span class="badge bg-light text-dark border mt-1">${o.items?.length||0} Pos.</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        ${currentFilter === 'mine' ? eyeBtn + routeBtn : ''}
+                    </div>
+                </div>
+            </div>`; 
+        }); 
+    }
+
+    // --- SMART ROUTE (ANTI-HANG VERSION) ---
+    window.optimizeRoute = () => {
+        if(currentFilter !== 'mine') return alert("Bitte gehe zuerst auf 'Meine Route'.");
+        
+        const selectedDate = document.getElementById('mainDateFilter').value;
+        const myOrders = allOrders.filter(o => o.deliveryDate === selectedDate && o.assignedDriver === currentUser.name && o.status !== 'Delivered' && o.status !== 'Returned');
+        
+        if(myOrders.length < 2) return alert("Zu wenig Aufträge zum Sortieren (Min. 2).");
+
+        const loader = document.getElementById('loadingOverlay');
+        const loadText = document.getElementById('loadingText');
+        loader.classList.remove('d-none');
+        loadText.innerText = "Suche GPS Signal...";
+
+        const runGoogleOptimization = (originLat, originLng) => {
+            loadText.innerText = "Frage Google nach Distanzen...";
+            
+            const destinations = myOrders.map(o => {
+                const parts = o.customerName.split('|');
+                return parts.length > 1 ? parts[1].trim() : parts[0].trim();
+            });
+
+            const service = new google.maps.DistanceMatrixService();
+            service.getDistanceMatrix({
+                origins: [{lat: originLat, lng: originLng}],
+                destinations: destinations,
+                travelMode: 'DRIVING',
+            }, (response, status) => {
+                loader.classList.add('d-none');
+                
+                if (status === 'OK') {
+                    const results = response.rows[0].elements;
+                    const orderDistances = myOrders.map((o, index) => {
+                        return { 
+                            id: o.id, 
+                            dist: results[index].status === 'OK' ? results[index].distance.value : 99999999 
+                        };
+                    });
+                    orderDistances.sort((a, b) => a.dist - b.dist);
+                    sortedOrderIds = orderDistances.map(od => od.id);
+                    alert("Route erfolgreich optimiert! 🚀");
+                    window.renderOrders();
+                } else {
+                    alert("Google Fehler: " + status + "\n(Bitte API 'Distance Matrix' aktivieren!)");
+                }
+            });
+        };
+
+        if (navigator.geolocation) {
+            const geoOptions = { timeout: 8000, enableHighAccuracy: false };
+            navigator.geolocation.getCurrentPosition(
+                (position) => { runGoogleOptimization(position.coords.latitude, position.coords.longitude); },
+                (error) => { 
+                    alert("GPS nicht gefunden. Nutze Standard-Startpunkt (Bern).");
+                    runGoogleOptimization(46.947974, 7.447447); 
+                },
+                geoOptions
+            );
+        } else {
+            alert("Kein GPS Support. Nutze Standard-Startpunkt.");
+            runGoogleOptimization(46.947974, 7.447447);
+        }
+    };
+
+    window.showInvoice = (id) => { const o = allOrders.find(x => x.id === id); if(o && o.invoiceImg) { document.getElementById('fullInvoiceImg').src = o.invoiceImg; new bootstrap.Modal(document.getElementById('invoiceModal')).show(); } };
+    window.showLoadingList = () => { const selectedDate = document.getElementById('mainDateFilter').value; const myOrders = allOrders.filter(o => o.deliveryDate === selectedDate && o.assignedDriver === currentUser.name && o.status !== 'Delivered' && o.status !== 'Returned'); const agg = {}; myOrders.forEach(o => { if(o.items) o.items.forEach(i => { const n = i.name.trim(); const qty = parseFloat(i.qty) || 0; const unit = i.qty.replace(/[0-9.]/g, '').trim(); if(!agg[n]) agg[n] = {count:0, unit:unit}; agg[n].count += qty; }); }); const listBody = document.getElementById('loadingListBody'); listBody.innerHTML = ''; if(Object.keys(agg).length === 0) listBody.innerHTML = '<li class="list-group-item text-center text-muted">Leer</li>'; Object.keys(agg).sort().forEach(k => { listBody.innerHTML += `<li class="list-group-item d-flex justify-content-between"><span>${k}</span><strong>${agg[k].count} ${agg[k].unit}</strong></li>`; }); new bootstrap.Modal(document.getElementById('loadingListModal')).show(); };
+    window.claimOrder = async (id) => { if(confirm("Auftrag übernehmen?")) { await updateDoc(doc(db, "orders", id), { assignedDriver: currentUser.name }); window.filterOrders('mine'); } };
+    window.openModal = (id) => { const o = allOrders.find(x => x.id === id); if(!o) return; currentOrderID = id; document.getElementById('modalCustName').innerText = o.customerName.split('|')[0]; document.getElementById('modalTotalInput').value = parseFloat(o.totalAmount).toFixed(2); document.getElementById('driverNote').value = o.deliveryNote || ''; const iList = document.getElementById('modalItems'); iList.innerHTML = ''; if(o.items) o.items.forEach(i => iList.innerHTML += `<div class="d-flex justify-content-between border-bottom py-1"><span>${i.qty} ${i.name}</span><span>${i.total.toFixed(2)}</span></div>`); toggleReturnView(false); new bootstrap.Modal(document.getElementById('deliveryModal')).show(); setTimeout(() => setupCanvas('sigPad', false), 500); };
+    window.toggleReturnView = (isReturn) => { document.getElementById('viewSuccess').classList.toggle('d-none', isReturn); document.getElementById('viewReturn').classList.toggle('d-none', !isReturn); document.getElementById('btnConfirm').classList.toggle('d-none', isReturn); document.getElementById('btnConfirmRet').classList.toggle('d-none', !isReturn); }
+    window.openReportModal = () => { document.getElementById('expFuel').value=''; document.getElementById('reportDate').value = document.getElementById('mainDateFilter').value; window.updateReportView(); new bootstrap.Modal(document.getElementById('reportModal')).show(); setTimeout(() => setupCanvas('sigPadReport', true), 500); };
+    window.updateReportView = () => { let cash = 0; const selectedDate = document.getElementById('reportDate').value; allOrders.forEach(o => { const isMyDelivery = (o.deliveredBy === currentUser.name) || (!o.deliveredBy && o.assignedDriver === currentUser.name); if(o.status === 'Delivered' && o.deliveryDate === selectedDate && o.paymentMethod === 'Bar' && isMyDelivery) { cash += parseFloat(o.finalAmount || o.totalAmount); } }); document.getElementById('repCashTotal').innerText = cash.toFixed(2); window.calcNet(); };
+    window.calcNet = () => { const cash = parseFloat(document.getElementById('repCashTotal').innerText)||0; const fuel = parseFloat(document.getElementById('expFuel').value)||0; const other = parseFloat(document.getElementById('expOther').value)||0; document.getElementById('netHandover').innerText = (cash - fuel - other).toFixed(2); };
+    window.submitDailyReport = async () => { const sig = document.getElementById('sigPadReport').toDataURL(); const vehicle = document.getElementById('vehSelect').value; if(!vehicle) return alert("Bitte Fahrzeug wählen!"); await addDoc(collection(db, "driver_daily_reports"), { driver: currentUser.name, date: new Date().toISOString(), vehicle, totalCash: parseFloat(document.getElementById('repCashTotal').innerText), netHandover: document.getElementById('netHandover').innerText, signature: sig }); alert("Tagesabschluss gesendet!"); bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide(); };
+
+    function setupCanvas(id, isReport) { const cvs = document.getElementById(id); const ctx = cvs.getContext('2d'); const rect = cvs.getBoundingClientRect(); cvs.width = rect.width; cvs.height = rect.height; ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.strokeStyle = "#000"; if(isReport) { reportCanvas = cvs; reportCtx = ctx; } else { sigCanvas = cvs; sigCtx = ctx; } const start=(e)=>{e.preventDefault(); isDrawing=true; ctx.beginPath(); const p=getPos(e,cvs); ctx.moveTo(p.x,p.y);}; const move=(e)=>{if(!isDrawing)return; e.preventDefault(); const p=getPos(e,cvs); ctx.lineTo(p.x,p.y); ctx.stroke();}; const end=()=>isDrawing=false; ['touchstart','mousedown'].forEach(e=>cvs.addEventListener(e,start)); ['touchmove','mousemove'].forEach(e=>cvs.addEventListener(e,move)); ['touchend','mouseup'].forEach(e=>cvs.addEventListener(e,end)); }
+    function getPos(e,c) { const r=c.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:t.clientX-r.left, y:t.clientY-r.top}; }
+    window.clearSig = (id) => document.getElementById(id).getContext('2d').clearRect(0,0,1000,1000);
+    window.finishOrder = async (status) => { let u = { status, deliveredBy: currentUser.name, deliveredAt: new Date().toISOString() }; if(status==='Delivered'){ u.paymentMethod = document.querySelector('input[name="payMethod"]:checked').value; u.finalAmount = parseFloat(document.getElementById('modalTotalInput').value)||0; u.deliveryNote = document.getElementById('driverNote').value; u.signature = sigCanvas.toDataURL(); } else { u.returnReason = document.getElementById('returnReason').value; } await updateDoc(doc(db, "orders", currentOrderID), u); bootstrap.Modal.getInstance(document.getElementById('deliveryModal')).hide(); };
+    window.toggleTheme = () => { document.body.classList.toggle('dark-mode'); localStorage.setItem('driverTheme', document.body.classList.contains('dark-mode') ? 'dark' : 'light'); document.getElementById('themeIcon').className = document.body.classList.contains('dark-mode') ? 'fa fa-sun' : 'fa fa-moon'; };
+    window.checkTheme = () => { if(localStorage.getItem('driverTheme')==='dark') { document.body.classList.add('dark-mode'); document.getElementById('themeIcon').className = 'fa fa-sun'; } };
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_F92tTWrN5aUF6iCIkQv5s_4xwIkm81k&libraries=geometry"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

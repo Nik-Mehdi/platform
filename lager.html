@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sam Pack Lager V9.2 (Classic + Search)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #34495e; --accent: #f1c40f; --bg: #f8f9fa; }
+        body { background: var(--bg); font-family: 'Segoe UI', sans-serif; -webkit-user-select: none; user-select: none; padding-bottom: 100px; }
+        
+        /* DESKTOP VIEW */
+        .app-container { max-width: 1000px; margin: 0 auto; min-height: 100vh; background: #fff; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; display: flex; flex-direction: column; }
+        @media (min-width: 992px) { .orders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; } }
+
+        /* LOGIN */
+        #login-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--primary); color: white; position: fixed; top: 0; left: 0; width: 100%; z-index: 2000; }
+        .pin-display { font-size: 2.5rem; letter-spacing: 15px; text-align: center; margin-bottom: 30px; background: transparent; border: none; border-bottom: 2px solid rgba(255,255,255,0.3); color: white; width: 220px; outline: none; }
+        #numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 300px; }
+        .pin-btn { width: 75px; height: 75px; border-radius: 50%; font-size: 1.8rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; }
+        .pin-btn:active { background: var(--accent); transform: scale(0.9); color: var(--primary); }
+
+        /* MAIN UI */
+        .header-bar { background: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; }
+        .ctrl-bar { background: #f8f9fa; padding: 10px; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 10px; }
+        .driver-scroll { overflow-x: auto; white-space: nowrap; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+        .filter-pill { display: inline-block; padding: 8px 16px; background: white; border: 1px solid #ddd; border-radius: 20px; margin-right: 8px; font-size: 0.9rem; cursor: pointer; color: #555; transition: 0.2s; }
+        .filter-pill.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: bold; }
+
+        .order-card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border-left: 5px solid #ccc; cursor: pointer; transition: 0.2s; border: 1px solid #eee; }
+        .order-card.packed { border-left-color: #27ae60; background: #f0fff4; }
+        
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .item-actions { display: flex; gap: 10px; }
+        .btn-check-item { width: 40px; height: 40px; border-radius: 8px; border: 1px solid #ddd; background: white; color: #ccc; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+        
+        .item-row.ok .btn-check-item.ok { background: #27ae60; color: white; border-color: #27ae60; }
+        .item-row.ok .item-name { text-decoration: line-through; color: #aaa; }
+        .item-row.missing .btn-check-item.missing { background: #e67e22; color: white; border-color: #e67e22; }
+        .item-row.missing .item-name { color: #e74c3c; font-weight: bold; }
+
+        .bottom-action { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 15px; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); display: flex; justify-content: center; z-index: 99; }
+        .app-container .bottom-action { position: absolute; max-width: 1000px; } 
+        
+        canvas { border: 2px dashed #95a5a6; border-radius: 12px; width: 100%; background: #fff; touch-action: none; }
+        
+        /* SCROLLABLE LISTS IN REPORT */
+        .report-scroll-box { max-height: 150px; overflow-y: auto; background: #f8f9fa; border-radius: 8px; padding: 10px; border: 1px solid #eee; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<div id="login-screen"><i class="fa fa-dolly fa-3x mb-4 text-warning"></i><input type="password" id="pinInput" class="pin-display" readonly placeholder="••••"><div id="numpad"></div></div>
+
+<div class="app-container d-none" id="main-screen">
+    <div class="header-bar">
+        <div class="d-flex align-items-center gap-2">
+            <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="fa fa-user"></i></div>
+            <div><div class="small text-muted" style="line-height:1">Lagerist</div><div class="fw-bold" id="userNameDisplay">...</div></div>
+        </div>
+        <div class="d-flex gap-2"><button class="btn btn-outline-danger btn-sm" onclick="location.reload()"><i class="fa fa-power-off"></i></button></div>
+    </div>
+    
+    <div class="ctrl-bar">
+        <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+            <input type="date" id="workDate" class="form-control form-control-sm w-auto fw-bold" onchange="window.renderOrders()">
+            <div class="d-flex gap-1">
+                <button class="btn btn-warning btn-sm fw-bold" onclick="window.sendStockAlert()"><i class="fa fa-exclamation-triangle"></i> FEHLT?</button>
+                <button class="btn btn-primary btn-sm fw-bold" onclick="showPackList()"><i class="fa fa-list-alt"></i> LISTE</button>
+            </div>
+        </div>
+        
+        <div class="mb-2">
+            <input type="text" id="searchInput" class="form-control" placeholder="🔍 Suchen (Kunde, Artikel...)" onkeyup="window.renderOrders()">
+        </div>
+
+        <div class="driver-scroll" id="driverFilters"></div>
+    </div>
+
+    <div class="p-3 flex-grow-1">
+        <div id="ordersList" class="orders-grid"></div>
+        <div id="emptyState" class="text-center text-muted mt-5 d-none"><i class="fa fa-check-circle fa-3x mb-3 opacity-25"></i><p>Keine Aufträge für diese Auswahl.</p></div>
+    </div>
+
+    <div class="bottom-action">
+        <button class="btn btn-dark w-100 fw-bold py-2 shadow-sm" onclick="openReportModal()"><i class="fa fa-flag-checkered me-2"></i> TAGESABSCHLUSS</button>
+    </div>
+</div>
+
+<div class="modal fade" id="packModal" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0 shadow-sm"><div style="width:100%"><h5 class="modal-title fw-bold" id="packCustName">...</h5><select id="modalDriverSelect" class="form-select form-select-sm mt-2 bg-light border-0 fw-bold" onchange="updateOrderDriver(this.value)"></select></div><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="progress mb-3" style="height: 10px;"><div class="progress-bar bg-success" id="packProgress" style="width: 0%"></div></div><div id="packItemsList" class="mb-4"></div><div class="alert alert-light border text-muted small text-center"><i class="fa fa-info-circle"></i> Bitte jeden Artikel markieren (Grün/Orange)</div></div><div class="modal-footer border-0 shadow-lg"><button id="btnFinishPack" class="btn btn-success w-100 py-3 fw-bold" disabled onclick="finishPacking()">FERTIG PACKEN</button></div></div></div></div>
+
+<div class="modal fade" id="packListModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title" id="plTitle">Packliste</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><ul class="list-group list-group-flush" id="plBody"></ul></div><div class="modal-footer"><button class="btn btn-primary w-100" data-bs-dismiss="modal">OK</button></div></div></div></div>
+
+<div class="modal fade" id="reportModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-warning text-dark"><h5 class="modal-title">Tagesabschluss</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
+    <div class="d-flex justify-content-between mb-3 align-items-center">
+        <span>Anzahl Aufträge:</span><h4 class="fw-bold m-0" id="repPackedCount">0</h4>
+    </div>
+    
+    <h6 class="fw-bold text-success"><i class="fa fa-check-double"></i> Gepackte Ware (Gesamt):</h6>
+    <div id="repPackedList" class="report-scroll-box"></div>
+    
+    <h6 class="fw-bold text-danger"><i class="fa fa-exclamation-circle"></i> Fehlmengen:</h6>
+    <div id="repMissingList" class="report-scroll-box"></div>
+    
+    <h6 class="text-center mt-3 small text-muted">UNTERSCHRIFT (Pflicht)</h6>
+    <canvas id="sigPad" height="110"></canvas>
+    <div class="text-end"><button class="btn btn-link btn-sm text-danger text-decoration-none" onclick="clearSig()">Löschen</button></div>
+</div><div class="modal-footer"><button class="btn btn-dark w-100 py-3 fw-bold" onclick="submitReport()">Abschluss Senden</button></div></div></div></div>
+
+<div class="modal fade" id="invoiceModal" tabindex="-1"><div class="modal-dialog modal-fullscreen"><div class="modal-content bg-dark"><div class="modal-header border-0"><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-0 d-flex align-items-center justify-content-center"><img id="fullInvoiceImg" style="max-width:100%; max-height:100vh;"></div></div></div></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, query, where, updateDoc, doc, getDocs, addDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    const db = getFirestore(initializeApp({ apiKey: "AIzaSyCY9TmJwzoJRWFTAjhDFBD0eFMR4YKTHJQ", projectId: "listapp-96713" }));
+    let currentUser = null, allOrders = [], drivers = [], currentOrderId = null, currentDriverFilter = 'all', sigCanvas, sigCtx, isDrawing = false;
+    let currentPackState = []; 
+
+    document.getElementById('workDate').value = new Date().toISOString().split('T')[0];
+
+    // LOGIN & INIT
+    const numpad = document.getElementById('numpad');
+    [1,2,3,4,5,6,7,8,9,'C',0,'➜'].forEach(n => { const btn=document.createElement('div'); btn.className='pin-btn'; btn.innerHTML=n; if(n==='➜'){btn.style.background='#f1c40f'; btn.style.color='black'; btn.onclick=()=>tryLogin(document.getElementById('pinInput').value);}else if(n==='C'){btn.style.background='#e74c3c'; btn.onclick=()=>document.getElementById('pinInput').value='';}else{btn.onclick=()=>document.getElementById('pinInput').value+=n;} numpad.appendChild(btn); });
+
+    async function tryLogin(pin) {
+        if(!pin) return;
+        const q = query(collection(db, "warehouse_users"), where("pin", "==", pin));
+        const snap = await getDocs(q);
+        if(!snap.empty) { currentUser = snap.docs[0].data(); document.getElementById('userNameDisplay').innerText = currentUser.name; document.getElementById('login-screen').classList.add('d-none'); document.getElementById('main-screen').classList.remove('d-none'); loadDrivers(); startSync(); } else { alert("Falsch!"); document.getElementById('pinInput').value = ''; }
+    }
+
+    async function loadDrivers() {
+        const snap = await getDocs(collection(db, "drivers"));
+        drivers = []; snap.forEach(d => drivers.push(d.data().name));
+        renderDriverFilters();
+    }
+
+    function renderDriverFilters() {
+        const bar = document.getElementById('driverFilters');
+        bar.innerHTML = `<span class="filter-pill ${currentDriverFilter==='all'?'active':''}" onclick="setFilter('all')">Alle</span>` + 
+                        `<span class="filter-pill ${currentDriverFilter==='none'?'active':''}" onclick="setFilter('none')">Ohne Fahrer</span>`;
+        drivers.forEach(d => { bar.innerHTML += `<span class="filter-pill ${currentDriverFilter===d?'active':''}" onclick="setFilter('${d}')">${d}</span>`; });
+    }
+    window.setFilter = (f) => { currentDriverFilter = f; renderDriverFilters(); window.renderOrders(); };
+
+    function startSync() {
+        onSnapshot(collection(db, "orders"), (s) => {
+            allOrders = []; s.forEach(d => allOrders.push({id: d.id, ...d.data()}));
+            window.renderOrders();
+        });
+    }
+
+    window.renderOrders = () => {
+        const list = document.getElementById('ordersList'); list.innerHTML = '';
+        const selectedDate = document.getElementById('workDate').value;
+        const searchText = document.getElementById('searchInput').value.toLowerCase(); // NEW SEARCH LOGIC
+
+        let filtered = allOrders.filter(o => o.deliveryDate === selectedDate && o.status !== 'Delivered' && o.status !== 'Returned');
+
+        // Apply Driver Filter
+        if (currentDriverFilter !== 'all') {
+            if (currentDriverFilter === 'none') filtered = filtered.filter(o => !o.assignedDriver);
+            else filtered = filtered.filter(o => o.assignedDriver === currentDriverFilter);
+        }
+
+        // Apply Search Filter (NEW)
+        if (searchText) {
+            filtered = filtered.filter(o => {
+                const cName = o.customerName.toLowerCase();
+                const iNames = o.items ? o.items.map(i => i.name.toLowerCase()).join(' ') : '';
+                return cName.includes(searchText) || iNames.includes(searchText);
+            });
+        }
+
+        if(filtered.length === 0) { document.getElementById('emptyState').classList.remove('d-none'); return; }
+        document.getElementById('emptyState').classList.add('d-none');
+        filtered.sort((a,b) => (a.status==='Packed') - (b.status==='Packed')); 
+
+        filtered.forEach(o => {
+            const isPacked = o.status === 'Packed';
+            const icon = isPacked ? '<i class="fa fa-check-circle text-success fa-2x"></i>' : '<i class="fa fa-box-open text-primary fa-2x"></i>';
+            const drvName = o.assignedDriver || '<span class="text-danger fw-bold">Kein Fahrer</span>';
+            const eyeBtn = o.invoiceImg ? `<button class="btn btn-sm btn-outline-info me-2" onclick="event.stopPropagation(); showInvoice('${o.id}')"><i class="fa fa-eye"></i></button>` : '';
+            list.innerHTML += `<div class="order-card ${isPacked?'packed':''}" onclick="openPackModal('${o.id}')"><div class="d-flex justify-content-between align-items-center"><div><div class="small text-muted mb-1"><i class="fa fa-truck"></i> ${drvName}</div><h6 class="fw-bold m-0 text-truncate" style="max-width: 180px;">${o.customerName.split('|')[0]}</h6><small class="text-muted">${o.items.length} Pos.</small></div><div class="d-flex align-items-center">${eyeBtn}${icon}</div></div></div>`;
+        });
+    };
+
+    window.showInvoice = (id) => { const o = allOrders.find(x => x.id === id); if(o && o.invoiceImg) { document.getElementById('fullInvoiceImg').src = o.invoiceImg; new bootstrap.Modal(document.getElementById('invoiceModal')).show(); } };
+
+    // --- PACK LIST AGGREGATE ---
+    window.showPackList = () => {
+        const selectedDate = document.getElementById('workDate').value;
+        let filtered = allOrders.filter(o => o.deliveryDate === selectedDate && o.status !== 'Delivered' && o.status !== 'Returned');
+        
+        let title = "Gesamt Packliste";
+        if(currentDriverFilter !== 'all' && currentDriverFilter !== 'none') { filtered = filtered.filter(o => o.assignedDriver === currentDriverFilter); title = "Packliste: " + currentDriverFilter; } 
+        else if (currentDriverFilter === 'none') { filtered = filtered.filter(o => !o.assignedDriver); title = "Packliste: Ohne Fahrer"; }
+
+        const agg = {};
+        filtered.forEach(o => { o.items.forEach(i => { const n = i.name.trim(); const qty = parseFloat(i.qty)||0; const unit = i.qty.replace(/[0-9.]/g, '').trim(); if(!agg[n]) agg[n] = {count:0, unit:unit}; agg[n].count += qty; }); });
+
+        const listBody = document.getElementById('plBody'); listBody.innerHTML = ''; document.getElementById('plTitle').innerText = title;
+        if(Object.keys(agg).length === 0) listBody.innerHTML = '<li class="list-group-item text-center text-muted">Leer</li>';
+        Object.keys(agg).sort().forEach(k => { listBody.innerHTML += `<li class="list-group-item d-flex justify-content-between"><span>${k}</span><strong>${agg[k].count} ${agg[k].unit}</strong></li>`; });
+        new bootstrap.Modal(document.getElementById('packListModal')).show();
+    };
+
+    // --- PACK MODAL & CHECK LOGIC ---
+    window.openPackModal = (id) => {
+        const o = allOrders.find(x => x.id === id); if(!o) return; currentOrderId = id;
+        document.getElementById('packCustName').innerText = o.customerName.split('|')[0];
+        
+        const dSel = document.getElementById('modalDriverSelect');
+        dSel.innerHTML = '<option value="">-- Fahrer wählen --</option>';
+        drivers.forEach(d => dSel.innerHTML += `<option value="${d}" ${o.assignedDriver===d?'selected':''}>${d}</option>`);
+
+        const list = document.getElementById('packItemsList'); list.innerHTML = '';
+        currentPackState = new Array(o.items.length).fill(null); 
+
+        o.items.forEach((item, idx) => { 
+            list.innerHTML += `
+            <div class="item-row" id="row-${idx}">
+                <div class="lh-1">
+                    <div class="fw-bold" style="font-size:1.1rem">${item.qty}</div>
+                    <div class="small item-name">${item.name}</div>
+                </div>
+                <div class="item-actions">
+                    <div class="btn-check-item ok" onclick="setItemState(${idx}, 'ok')"><i class="fa fa-check"></i></div>
+                    <div class="btn-check-item missing" onclick="setItemState(${idx}, 'missing')"><i class="fa fa-exclamation"></i></div>
+                </div>
+            </div>`; 
+        });
+        updateProgress();
+        new bootstrap.Modal(document.getElementById('packModal')).show();
+    };
+
+    window.setItemState = (idx, state) => {
+        const row = document.getElementById(`row-${idx}`);
+        row.classList.remove('ok', 'missing');
+        if (currentPackState[idx] === state) { currentPackState[idx] = null; } 
+        else { currentPackState[idx] = state; row.classList.add(state); }
+        updateProgress();
+    };
+
+    function updateProgress() {
+        const total = currentPackState.length;
+        const done = currentPackState.filter(s => s !== null).length;
+        const pct = (done / total) * 100;
+        document.getElementById('packProgress').style.width = pct + '%';
+        document.getElementById('btnFinishPack').disabled = (done < total);
+    }
+
+    window.updateOrderDriver = async (val) => { await updateDoc(doc(db, "orders", currentOrderId), { assignedDriver: val }); };
+
+    window.finishPacking = async () => { 
+        const o = allOrders.find(x => x.id === currentOrderId);
+        const missingItems = [];
+        o.items.forEach((item, idx) => { if(currentPackState[idx] === 'missing') missingItems.push({ name: item.name, qty: item.qty }); });
+        await updateDoc(doc(db, "orders", currentOrderId), { status: 'Packed', packedBy: currentUser.name, packedAt: new Date().toISOString(), missingItems: missingItems }); 
+        bootstrap.Modal.getInstance(document.getElementById('packModal')).hide(); 
+    };
+
+    window.sendStockAlert = async () => { const item = prompt("Welcher Artikel fehlt?"); if(item) { await addDoc(collection(db, "alerts"), { type: 'stock', item: item, msg: 'Nicht genug Bestand', from: currentUser.name, createdAt: new Date().toISOString() }); alert("Gemeldet!"); } };
+
+    // --- REPORT LOGIC (AGGREGATED & SCROLLABLE) ---
+    window.openReportModal = () => {
+        const selectedDate = document.getElementById('workDate').value;
+        // Get today's packed orders by current user
+        const packedOrders = allOrders.filter(o => o.deliveryDate === selectedDate && o.status === 'Packed' && o.packedBy === currentUser.name);
+        document.getElementById('repPackedCount').innerText = packedOrders.length;
+
+        // 1. Calculate Aggregated Packed Items (Excluding Missing)
+        const aggPacked = {};
+        const missingListRaw = [];
+
+        packedOrders.forEach(o => {
+            const missingNames = o.missingItems ? o.missingItems.map(m => m.name) : [];
+            
+            // Add Missing to raw list
+            if(o.missingItems) {
+                o.missingItems.forEach(mi => {
+                    missingListRaw.push({ cust: o.customerName.split('|')[0], name: mi.name, qty: mi.qty });
+                });
+            }
+
+            // Aggregate Packed (Only if NOT in missing for this order)
+            o.items.forEach(i => {
+                // Warning: This simple check assumes unique item names.
+                // If item is marked missing, skip aggregation
+                const isMissing = o.missingItems && o.missingItems.some(mi => mi.name === i.name); // Simple match
+                if (!isMissing) {
+                    const n = i.name.trim();
+                    const qty = parseFloat(i.qty) || 0;
+                    const unit = i.qty.replace(/[0-9.]/g, '').trim();
+                    if(!aggPacked[n]) aggPacked[n] = {count:0, unit:unit};
+                    aggPacked[n].count += qty;
+                }
+            });
+        });
+
+        // Render Packed List
+        const pList = document.getElementById('repPackedList'); pList.innerHTML = '';
+        if(Object.keys(aggPacked).length === 0) pList.innerHTML = '<div class="text-muted small">Nichts gepackt.</div>';
+        else {
+            Object.keys(aggPacked).sort().forEach(k => {
+                pList.innerHTML += `<div class="d-flex justify-content-between border-bottom py-1 small"><span>${k}</span><strong>${aggPacked[k].count} ${aggPacked[k].unit}</strong></div>`;
+            });
+        }
+
+        // Render Missing List
+        const mList = document.getElementById('repMissingList'); mList.innerHTML = '';
+        if(missingListRaw.length === 0) mList.innerHTML = '<div class="text-success small"><i class="fa fa-check"></i> Keine Fehlmengen.</div>';
+        else {
+            missingListRaw.forEach(m => {
+                mList.innerHTML += `<div class="border-bottom py-1 small text-danger"><strong>${m.cust}</strong>: ${m.qty} ${m.name}</div>`;
+            });
+        }
+
+        new bootstrap.Modal(document.getElementById('reportModal')).show(); 
+        setTimeout(setupCanvas, 500); 
+    };
+
+    window.submitReport = async () => {
+        const sig = sigCanvas.toDataURL();
+        const canvas = document.getElementById('sigPad');
+        const isSigBlank = !canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data.some(c=>c!==0);
+        
+        if(isSigBlank && !isDrawing) { alert("Bitte unterschreiben!"); return; }
+
+        const packedCount = document.getElementById('repPackedCount').innerText;
+        const packedHTML = document.getElementById('repPackedList').innerHTML;
+        const missingHTML = document.getElementById('repMissingList').innerHTML;
+
+        await addDoc(collection(db, "daily_reports"), { 
+            type: 'warehouse', 
+            date: new Date().toISOString(), 
+            by: currentUser.name, 
+            summary: `<strong>Anzahl: ${packedCount}</strong><br><hr><strong>Gepackt:</strong><br>${packedHTML}<br><hr><strong>Fehlmengen:</strong><br>${missingHTML}`, 
+            signature: sig 
+        });
+        bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
+        alert("Tagesabschluss gesendet!");
+    };
+
+    function setupCanvas() { sigCanvas = document.getElementById('sigPad'); sigCtx = sigCanvas.getContext('2d'); const rect = sigCanvas.getBoundingClientRect(); sigCanvas.width = rect.width; sigCanvas.height = rect.height; sigCtx.lineWidth = 3; sigCtx.lineCap = "round"; sigCtx.strokeStyle = "#000"; const start=(e)=>{e.preventDefault(); isDrawing=true; sigCtx.beginPath(); const p=getPos(e); sigCtx.moveTo(p.x, p.y);}; const move=(e)=>{if(!isDrawing)return; e.preventDefault(); const p=getPos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke();}; const end=()=>isDrawing=false; ['touchstart','mousedown'].forEach(e=>sigCanvas.addEventListener(e,start)); ['touchmove','mousemove'].forEach(e=>sigCanvas.addEventListener(e,move)); ['touchend','mouseup'].forEach(e=>sigCanvas.addEventListener(e,end)); }
+    function getPos(e) { const t=e.touches?e.touches[0]:e; const r=sigCanvas.getBoundingClientRect(); return {x:t.clientX-r.left, y:t.clientY-r.top}; }
+    window.clearSig = () => sigCtx.clearRect(0,0,sigCanvas.width,sigCanvas.height);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
