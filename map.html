@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmarHub - Live Map 🌍</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: sans-serif; }
+        #map { height: 100%; width: 100%; }
+        
+        /* باکس وضعیت گوشه تصویر */
+        .status-box {
+            position: absolute; top: 10px; left: 10px;
+            background: white; padding: 15px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000; min-width: 200px;
+        }
+        .driver-item { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; }
+        .dot { height: 10px; width: 10px; background-color: #bbb; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .online { background-color: #2ecc71; box-shadow: 0 0 5px #2ecc71; }
+    </style>
+</head>
+<body>
+
+    <div class="status-box">
+        <h3 style="margin: 0 0 10px 0;">🚚 Drivers Live</h3>
+        <div id="driverList">Loading...</div>
+    </div>
+
+    <div id="map"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // تنظیمات فایربیس (همونی که تو اپ‌ها هست)
+        const firebaseConfig = { apiKey: "AIzaSyCY9TmJwzoJRWFTAjhDFBD0eFMR4YKTHJQ", projectId: "listapp-96713" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let map;
+        let markers = {}; // لیست پین‌های روی نقشه
+
+        // شروع برنامه
+        window.initMap = () => {
+            // ساخت نقشه (مرکز روی سوئیس)
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 9,
+                center: { lat: 46.948, lng: 7.447 }, // Bern
+                mapTypeId: 'roadmap',
+                disableDefaultUI: false
+            });
+
+            // گوش دادن به تغییرات راننده‌ها
+            startTracking();
+        };
+
+        function startTracking() {
+            onSnapshot(collection(db, "drivers"), (snapshot) => {
+                const listDiv = document.getElementById('driverList');
+                listDiv.innerHTML = '';
+                
+                snapshot.forEach(doc => {
+                    const driver = doc.data();
+                    const driverId = doc.id;
+
+                    // 1. آپدیت لیست گوشه صفحه
+                    const isOnline = isRecent(driver.lastUpdate);
+                    listDiv.innerHTML += `
+                        <div class="driver-item">
+                            <span><span class="dot ${isOnline ? 'online' : ''}"></span> ${driver.name}</span>
+                            <small class="text-muted">${driver.pin}</small>
+                        </div>`;
+
+                    // 2. اگر مختصات داره، پین رو بذار روی نقشه
+                    if (driver.lat && driver.lng) {
+                        const pos = { lat: driver.lat, lng: driver.lng };
+
+                        if (markers[driverId]) {
+                            // اگر پین قبلاً بود، فقط جابجاش کن (حرکت نرم)
+                            markers[driverId].setPosition(pos);
+                        } else {
+                            // اگر پین نبود، بسازش
+                            markers[driverId] = new google.maps.Marker({
+                                position: pos,
+                                map: map,
+                                title: driver.name,
+                                label: { 
+                                    text: driver.name.substring(0, 1).toUpperCase(), 
+                                    color: "white", fontWeight: "bold" 
+                                },
+                                animation: google.maps.Animation.DROP
+                            });
+                        }
+                    }
+                });
+
+                if(snapshot.empty) listDiv.innerHTML = 'No drivers found.';
+            });
+        }
+
+        // تابع کمکی: چک میکنه آیا آخرین آپدیت مال کمتر از ۲ دقیقه پیشه؟
+        function isRecent(isoString) {
+            if(!isoString) return false;
+            const diff = new Date() - new Date(isoString);
+            return diff < 120000; // 120000 ms = 2 minutes
+        }
+        
+        // اتصال تابع initMap به ویندو
+        window.initMap = initMap;
+    </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_F92tTWrN5aUF6iCIkQv5s_4xwIkm81k&callback=initMap&v=weekly" async defer></script>
+
+</body>
+</html>
