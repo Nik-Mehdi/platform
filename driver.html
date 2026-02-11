@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sam Pack Driver V14.0 (Stop Numbers)</title>
+    <title>Sam Pack Driver V17.3 (Swiss Edition)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,43 +12,54 @@
         
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; -webkit-user-select: none; user-select: none; padding-bottom: 80px; transition: 0.3s; }
         .app-container { max-width: 1000px; margin: 0 auto; min-height: 100vh; background: var(--card-bg); position: relative; display: flex; flex-direction: column; }
-        @media (min-width: 992px) { .orders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; } }
         
-        /* LOGIN */
+        /* LOGIN & PIN */
         #login-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #2c3e50; color: white; position: fixed; top: 0; left: 0; width: 100%; z-index: 2000; }
         .pin-display { font-size: 2.5rem; letter-spacing: 15px; text-align: center; margin-bottom: 30px; background: transparent; border: none; border-bottom: 2px solid rgba(255,255,255,0.3); color: white; width: 220px; outline: none; }
-        #numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 300px; }
+        #numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 300px; transition: opacity 0.3s; }
         .pin-btn { width: 75px; height: 75px; border-radius: 50%; font-size: 1.8rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; }
         .pin-btn:active { background: #e67e22; transform: scale(0.9); }
 
-        /* UI ELEMENTS */
+        /* NAVBAR & STATUS */
         .navbar-custom { background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-        .date-floater { background: var(--bg); padding: 10px 15px; border-radius: 8px; margin: 15px 0; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
-        .date-floater input { border: none; background: transparent; font-weight: bold; color: var(--text); text-align: right; outline: none; }
-        
+        .status-dot { width: 12px; height: 12px; border-radius: 50%; background: #bdc3c7; display: inline-block; margin-right: 5px; transition: all 0.5s; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
+        .status-online { background: #2ecc71; box-shadow: 0 0 10px #2ecc71; animation: pulse 2s infinite; }
+        .status-error { background: #e74c3c; box-shadow: 0 0 10px #e74c3c; }
+        .status-net { background: #f39c12; box-shadow: 0 0 10px #f39c12; }
+        .status-wait { background: #bdc3c7; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        /* UI ELEMENTS */
         .order-card { background: var(--card-bg); border-radius: 12px; padding: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; position: relative; border: 1px solid var(--border); cursor: pointer; margin-bottom: 15px; }
         .card-header-custom { padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; color: white; }
         .bg-open { background: linear-gradient(135deg, #f39c12, #d35400); }
         .bg-done { background: linear-gradient(135deg, #27ae60, #2ecc71); }
         .bg-pool { background: linear-gradient(135deg, #34495e, #2c3e50); } 
         .bg-ret { background: linear-gradient(135deg, #c0392b, #e74c3c); }
-        
-        /* Stop Number Badge */
         .stop-badge { background: white; color: #2c3e50; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; margin-right: 10px; flex-shrink: 0; }
-
         .price-badge { background: white; color: #212529; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; min-width: 80px; text-align: center; }
-        body.dark-mode .price-badge { background: #333; color: #f1c40f; border: 1px solid #555; }
-        
+        .date-floater { background: var(--bg); padding: 10px 15px; border-radius: 8px; margin: 15px 0; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
+        .date-floater input { border: none; background: transparent; font-weight: bold; color: var(--text); text-align: right; outline: none; }
         .price-input { font-size: 2.5rem; font-weight: bold; color: #2c3e50; border: none; background: transparent; text-align: center; width: 100%; outline: none; border-bottom: 2px dashed #ccc; }
-        canvas { border: 2px dashed #bdc3c7; border-radius: 12px; width: 100%; background: #fff; touch-action: none; }
         
-        /* Loading Overlay */
+        canvas { border: 2px dashed #bdc3c7; border-radius: 12px; width: 100%; background: #fff; touch-action: none; display: block; }
+        
         #loadingOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; }
+
+        /* SUCCESS/ERROR OVERLAY */
+        #successOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(46, 204, 113, 0.95); z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        #successOverlay.show { opacity: 1; pointer-events: all; }
+        #successOverlay.error { background: rgba(231, 76, 60, 0.95); }
     </style>
 </head>
 <body>
 
 <div id="loadingOverlay" class="d-none"><div class="spinner-border text-warning mb-3" style="width: 3rem; height: 3rem;"></div><h5 id="loadingText">Berechne Route...</h5></div>
+
+<div id="successOverlay">
+    <i class="fa fa-check-circle fa-5x mb-3" id="overlayIcon"></i>
+    <h2 class="fw-bold" id="successText">Gesendet!</h2>
+</div>
 
 <div id="login-screen"><i class="fa fa-user-lock fa-3x mb-4 text-warning"></i><input type="password" id="pinInput" class="pin-display" readonly placeholder="••••"><div id="numpad"></div></div>
 
@@ -56,7 +67,12 @@
     <div class="navbar-custom">
         <div class="d-flex align-items-center gap-2">
             <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="fa fa-truck"></i></div>
-            <div><div class="small text-muted" style="line-height:1">Fahrer</div><div class="fw-bold" id="driverNameDisplay">...</div></div>
+            <div>
+                <div class="small text-muted" style="line-height:1">Fahrer</div>
+                <div class="fw-bold d-flex align-items-center">
+                    <span id="statusDot" class="status-dot"></span> <span id="driverNameDisplay">...</span>
+                </div>
+            </div>
         </div>
         <div class="d-flex align-items-center">
             <div class="theme-toggle p-2" onclick="toggleTheme()"><i class="fa fa-moon" id="themeIcon"></i></div>
@@ -65,13 +81,16 @@
     </div>
     
     <div class="px-3 pt-3">
-        <button class="btn btn-warning w-100 fw-bold mb-3 shadow-sm" onclick="optimizeRoute()">
+        <div id="statusMessage" class="small text-center text-muted mb-2" style="font-size: 0.7rem;">Warte auf GPS...</div>
+
+        <button class="btn btn-warning w-100 fw-bold mb-3 shadow-sm" id="btnOptimize" onclick="optimizeRoute()">
             <i class="fa fa-map-marked-alt me-2"></i> ROUTE OPTIMIEREN (AI)
         </button>
         
         <div class="d-flex gap-2 mb-3"><button class="btn btn-dark fw-bold flex-grow-1" onclick="showLoadingList()"><i class="fa fa-clipboard-list me-2"></i> LADELISTE</button></div>
         <input type="text" id="driverSearch" class="form-control mb-3" placeholder="🔍 Kunde suchen..." onkeyup="window.renderOrders()">
-        <div class="date-floater mt-0"><span class="fw-bold text-muted"><i class="fa fa-calendar-day me-2"></i>Datum:</span><input type="date" id="mainDateFilter" onchange="window.renderOrders()"></div>
+        
+        <div class="date-floater mt-0"><span class="fw-bold text-muted"><i class="fa fa-calendar-day me-2"></i>Datum:</span><input type="date" id="mainDateFilter" onchange="sortedOrderIds=[]; window.renderOrders()"></div>
     </div>
     
     <div class="px-3 flex-grow-1">
@@ -88,39 +107,207 @@
 </div>
 
 <div class="modal fade" id="loadingListModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-dark text-white"><h5 class="modal-title">Ladeliste</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><ul class="list-group list-group-flush" id="loadingListBody"></ul></div><div class="modal-footer"><button class="btn btn-dark w-100" data-bs-dismiss="modal">OK</button></div></div></div></div>
+
 <div class="modal fade" id="deliveryModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold" id="modalCustName">...</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="viewSuccess"><div class="text-center mb-3"><label class="small text-muted">BETRAG (CHF)</label><input type="number" id="modalTotalInput" class="price-input" step="0.05"></div><div class="row g-2 mb-3"><div class="col-4"><input type="radio" class="btn-check" name="payMethod" id="payCash" value="Bar" checked><label class="btn btn-outline-success w-100" for="payCash">Bar</label></div><div class="col-4"><input type="radio" class="btn-check" name="payMethod" id="payCard" value="Card"><label class="btn btn-outline-primary w-100" for="payCard">Karte</label></div><div class="col-4"><input type="radio" class="btn-check" name="payMethod" id="payInv" value="Rechnung"><label class="btn btn-outline-warning w-100" for="payInv">Rech.</label></div></div><textarea id="driverNote" class="form-control mb-3" rows="1" placeholder="Notiz..."></textarea><canvas id="sigPad" height="150"></canvas><div class="text-end mb-3"><small class="text-danger" onclick="clearSig('sigPad')">Clear Sign</small></div></div><div id="viewReturn" class="d-none"><div class="alert alert-danger">Nicht geliefert?</div><select id="returnReason" class="form-select mb-2"><option>Kunde nicht da</option><option>Geschlossen</option><option>Kein Geld</option><option>Verweigert</option></select></div><div id="modalItems" class="border-top pt-3 small"></div></div><div class="modal-footer"><button id="btnNotDelivered" class="btn btn-outline-danger" onclick="toggleReturnView(true)">Storno</button><button id="btnConfirm" class="btn btn-success flex-grow-1" onclick="finishOrder('Delivered')">OK</button><button id="btnConfirmRet" class="btn btn-danger flex-grow-1 d-none" onclick="finishOrder('Returned')">STORNIEREN</button></div></div></div></div>
-<div class="modal fade" id="reportModal" tabindex="-1"><div class="modal-dialog modal-fullscreen-md-down modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title">Tagesbericht</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="fw-bold small text-muted">DATUM:</label><input type="date" id="reportDate" class="form-control fw-bold" onchange="window.updateReportView()"></div><div class="mb-3"><label class="fw-bold small text-muted">FAHRZEUG:</label><select id="vehSelect" class="form-select"></select></div><div class="card bg-light border-0 mb-3"><div class="card-body d-flex justify-content-between align-items-center"><span>Total Bar:</span><strong class="text-success fs-4" id="repCashTotal">0.00</strong></div></div><input type="number" id="expFuel" class="form-control mb-2" placeholder="Tanken (CHF)" oninput="calcNet()"><input type="number" id="expOther" class="form-control mb-2" placeholder="Sonstiges (CHF)" oninput="calcNet()"><div class="text-center bg-light p-3 rounded"><small class="text-muted">ABZUGEBEN (NETTO)</small><h2 class="fw-bold text-dark m-0" id="netHandover">0.00</h2></div><h6 class="text-center mt-3 small text-muted">UNTERSCHRIFT</h6><canvas id="sigPadReport" height="120" style="border: 2px dashed #95a5a6; border-radius: 8px; width: 100%;"></canvas></div><div class="modal-footer"><button class="btn btn-success w-100 py-3 fw-bold" onclick="submitDailyReport()">Senden</button></div></div></div></div>
+
+<div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-fullscreen-md-down modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white"><h5 class="modal-title">Tagesbericht</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3"><label class="fw-bold small text-muted">DATUM:</label><input type="date" id="reportDate" class="form-control fw-bold" onchange="window.updateReportView()"></div>
+                    <div class="col-md-6 mb-3"><label class="fw-bold small text-muted">FAHRZEUG:</label><select id="vehSelect" class="form-select"></select></div>
+                </div>
+                
+                <div class="mb-2">
+                    <label class="fw-bold small text-muted mb-1">BARZAHLUNGEN (DETAILS):</label>
+                    <div id="cashDetailsList" class="border rounded p-2 bg-white small" style="max-height: 150px; overflow-y: auto;"></div>
+                </div>
+
+                <div class="card bg-light border-0 mb-3"><div class="card-body d-flex justify-content-between align-items-center"><span>Total Bar (Heute):</span><strong class="text-success fs-4" id="repCashTotal">0.00</strong></div></div>
+                
+                <div class="mb-3 border-top pt-3">
+                    <label class="fw-bold small text-muted mb-2">OFFENE RECHNUNGEN (NACHKASSO)</label>
+                    <div id="extInvoiceList"></div>
+                    <button class="btn btn-sm btn-outline-primary w-100 dashed-border" onclick="addInvoiceRow()"><i class="fa fa-plus"></i> Rechnung hinzufügen</button>
+                </div>
+                
+                <hr>
+                <div class="row">
+                    <div class="col-6"><input type="number" id="expFuel" class="form-control mb-2" placeholder="Tanken (CHF)" oninput="calcNet()"></div>
+                    <div class="col-6"><input type="number" id="expOther" class="form-control mb-2" placeholder="Sonstiges (CHF)" oninput="calcNet()"></div>
+                </div>
+                
+                <div class="text-center bg-light p-3 rounded mt-3">
+                    <small class="text-muted">ABZUGEBEN (NETTO)</small>
+                    <h2 class="fw-bold text-dark m-0" id="netHandover">0.00</h2>
+                </div>
+                
+                <h6 class="text-center mt-3 small text-muted">UNTERSCHRIFT <span class="text-danger">*</span></h6>
+                <div style="position: relative; height: 120px; width: 100%;">
+                    <canvas id="sigPadReport" style="width: 100%; height: 100%; border: 2px dashed #95a5a6; border-radius: 8px;"></canvas>
+                </div>
+                <div class="text-end"><small class="text-danger" onclick="clearSig('sigPadReport')">Clear Sign</small></div>
+
+            </div>
+            <div class="modal-footer"><button class="btn btn-success w-100 py-3 fw-bold" onclick="submitDailyReport()">Senden</button></div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="invoiceModal" tabindex="-1"><div class="modal-dialog modal-fullscreen"><div class="modal-content bg-dark"><div class="modal-header border-0"><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-0 d-flex align-items-center justify-content-center"><img id="fullInvoiceImg" style="max-width:100%; max-height:100vh;"></div></div></div></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, onSnapshot, query, where, updateDoc, doc, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     
-    // FIREBASE KEY
+    // FIREBASE
     const db = getFirestore(initializeApp({ apiKey: "AIzaSyCY9TmJwzoJRWFTAjhDFBD0eFMR4YKTHJQ", projectId: "listapp-96713" }));
     
-    let currentUser = null, allOrders = [], currentFilter = 'mine', sigCanvas, sigCtx, isDrawing = false, currentOrderID = null;
-    let sortedOrderIds = [];
+    const FALLBACK_START = { lat: 46.947974, lng: 7.447447 }; 
 
-    document.getElementById('mainDateFilter').value = new Date().toISOString().split('T')[0];
+    let currentUser = null, allOrders = [], currentFilter = 'mine', sortedOrderIds = [];
+    let sigCanvas, sigCtx, isDrawing = false, currentOrderID = null;
+    let reportCanvas, reportCtx; 
+    let gpsInterval = null; 
+    let isOptimizing = false; 
+    let orderUnsubscribe = null; 
+    let optimizeTimeout = null; 
+    let optimizeRunId = 0; 
+
+    // --- LOCAL DATE INIT ---
+    const d = new Date();
+    const localYMD = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    document.getElementById('mainDateFilter').value = localYMD;
+
+    // --- LIFECYCLE & CLEANUP ---
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            if(gpsInterval) { clearInterval(gpsInterval); setStatus('wait', 'GPS Pausiert (Hintergrund)'); }
+        } else {
+            if(currentUser) startLocationTracking();
+        }
+    });
+    
+    window.addEventListener('beforeunload', () => {
+        if(orderUnsubscribe) orderUnsubscribe();
+        if(gpsInterval) clearInterval(gpsInterval);
+    });
+
+    // --- UI HELPERS (DOM SAFE) ---
+    const uiSetBtn = (loading) => {
+        const btn = document.getElementById('btnOptimize');
+        if(!btn) return;
+        btn.disabled = loading;
+        btn.innerHTML = loading ? '<i class="fa fa-spinner fa-spin"></i> Berechne...' : '<i class="fa fa-map-marked-alt me-2"></i> ROUTE OPTIMIEREN (AI)';
+    };
+
+    const uiSetLoader = (show) => {
+        const l = document.getElementById('loadingOverlay');
+        if(l) l.classList.toggle('d-none', !show);
+    };
+
+    const uiSetText = (t) => {
+        const el = document.getElementById('loadingText');
+        if(el) el.innerText = t;
+    };
+
+    const resetOptimizeUI = () => {
+        if(optimizeTimeout) { clearTimeout(optimizeTimeout); optimizeTimeout = null; }
+        uiSetBtn(false);
+        uiSetLoader(false);
+        uiSetText('Berechne Route...');
+    };
+
+    function setStatus(state, msg) {
+        const dot = document.getElementById('statusDot');
+        const txt = document.getElementById('statusMessage');
+        
+        // SAFE DOM ACCESS
+        if(txt) {
+            txt.innerText = msg;
+            txt.classList.remove('text-success', 'text-danger', 'text-muted');
+        }
+        if(dot) dot.className = 'status-dot';
+
+        if(state === 'ok') { dot?.classList.add('status-online'); txt?.classList.add('text-success'); }
+        else if(state === 'error') { dot?.classList.add('status-error'); txt?.classList.add('text-danger'); }
+        else if(state === 'net') { dot?.classList.add('status-net'); }
+        else if(state === 'wait') { dot?.classList.add('status-wait'); txt?.classList.add('text-muted'); }
+    }
+
+    // --- APP LOGIC ---
     const numpad = document.getElementById('numpad'); [1,2,3,4,5,6,7,8,9,'C',0,'➜'].forEach(n => { const btn=document.createElement('div'); btn.className='pin-btn'; btn.innerHTML=n; if(n==='➜'){btn.style.background='#27ae60'; btn.onclick=()=>tryLogin(document.getElementById('pinInput').value);}else if(n==='C'){btn.style.background='#e74c3c'; btn.onclick=()=>document.getElementById('pinInput').value='';}else{btn.onclick=()=>document.getElementById('pinInput').value+=n;} numpad.appendChild(btn); });
 
-    async function tryLogin(pin) { if(!pin) return; const q = query(collection(db, "drivers"), where("pin", "==", pin)); const snap = await getDocs(q); if(!snap.empty) { currentUser = snap.docs[0].data(); currentUser.id = snap.docs[0].id; document.getElementById('driverNameDisplay').innerText = currentUser.name; document.getElementById('login-screen').classList.add('d-none'); document.getElementById('main-screen').classList.remove('d-none'); startLiveSync(); loadVehicles(); checkTheme(); } else { alert("Falscher PIN"); document.getElementById('pinInput').value = ''; } }
+    async function tryLogin(pin) { 
+        if(!pin) return; 
+        const q = query(collection(db, "drivers"), where("pin", "==", pin)); 
+        const snap = await getDocs(q); 
+        if(!snap.empty) { 
+            currentUser = snap.docs[0].data(); 
+            currentUser.id = snap.docs[0].id; 
+            document.getElementById('driverNameDisplay').innerText = currentUser.name; 
+            document.getElementById('login-screen').classList.add('d-none'); 
+            document.getElementById('main-screen').classList.remove('d-none'); 
+            startLiveSync(); 
+            loadVehicles(); 
+            checkTheme(); 
+            startLocationTracking();
+        } else { 
+            const pad = document.getElementById('numpad');
+            pad.style.opacity = '0.5';
+            pad.style.pointerEvents = 'none';
+            alert("Falscher PIN"); 
+            document.getElementById('pinInput').value = ''; 
+            setTimeout(() => {
+                pad.style.opacity = '1';
+                pad.style.pointerEvents = 'auto';
+            }, 1500);
+        } 
+    }
+
+    function startLocationTracking() {
+        if(gpsInterval) clearInterval(gpsInterval);
+        setStatus('wait', 'Starte GPS...');
+        gpsInterval = setInterval(() => {
+            if(!navigator.geolocation) { setStatus('error', 'Kein GPS Support'); return; }
+            navigator.geolocation.getCurrentPosition(
+                async (pos) => {
+                    try {
+                        if(!currentUser) return; 
+                        await updateDoc(doc(db, "drivers", currentUser.id), {
+                            lat: pos.coords.latitude, lng: pos.coords.longitude, lastUpdate: new Date().toISOString()
+                        });
+                        setStatus('ok', 'Online (GPS: OK)');
+                    } catch (err) { console.error(err); setStatus('net', 'Netzwerk Fehler!'); }
+                }, 
+                (err) => { console.error(err); setStatus('error', 'GPS Fehler! (Erlauben?)'); },
+                { enableHighAccuracy: true }
+            );
+        }, 10000); 
+    }
+
     async function loadVehicles() { const s = await getDocs(collection(db, "vehicles")); const sel = document.getElementById('vehSelect'); sel.innerHTML = '<option value="">Fahrzeug wählen...</option>'; s.forEach(d => sel.innerHTML += `<option value="${d.data().plate}">${d.data().plate}</option>`); }
-    function startLiveSync() { onSnapshot(query(collection(db, "orders")), (snapshot) => { allOrders = []; snapshot.forEach(doc => allOrders.push({id: doc.id, ...doc.data()})); window.renderOrders(); }); }
+    
+    function startLiveSync() { 
+        if(orderUnsubscribe) orderUnsubscribe();
+        orderUnsubscribe = onSnapshot(query(collection(db, "orders")), (snapshot) => { allOrders = []; snapshot.forEach(doc => allOrders.push({id: doc.id, ...doc.data()})); window.renderOrders(); }); 
+    }
+    
     window.filterOrders = (type) => { currentFilter = type; document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active')); document.getElementById('tab-'+type).classList.add('active'); window.renderOrders(); };
     
     window.renderOrders = () => { 
+        if(!currentUser) return; 
         const list = document.getElementById('ordersList'); list.innerHTML = ''; 
         const selectedDate = document.getElementById('mainDateFilter').value; 
         const finishBtn = document.getElementById('finishBtnContainer'); 
         const search = document.getElementById('driverSearch').value.toLowerCase(); 
-
+        
         let dateOrders = allOrders.filter(o => o.deliveryDate === selectedDate);
         document.getElementById('myRouteCount').innerText = dateOrders.filter(o => o.assignedDriver === currentUser.name && o.status !== 'Delivered' && o.status !== 'Returned').length;
-
         if(search) { dateOrders = dateOrders.filter(o => o.customerName.toLowerCase().includes(search)); }
-
+        
         let filtered = [];
         if (currentFilter === 'mine') { 
             filtered = dateOrders.filter(o => o.assignedDriver === currentUser.name && o.status !== 'Delivered' && o.status !== 'Returned'); 
@@ -129,152 +316,345 @@
                 filtered.sort((a,b) => {
                     const idxA = sortedOrderIds.indexOf(a.id);
                     const idxB = sortedOrderIds.indexOf(b.id);
-                    if(idxA !== -1 && idxB !== -1) return idxA - idxB;
-                    if(idxA !== -1) return -1;
-                    if(idxB !== -1) return 1;
-                    return 0;
+                    if(idxA === -1 && idxB === -1) return 0;
+                    if(idxA === -1) return 1;
+                    if(idxB === -1) return -1;
+                    return idxA - idxB;
                 });
             }
-        } else if (currentFilter === 'pool') { 
-            filtered = dateOrders.filter(o => !o.assignedDriver && o.status === 'Open'); 
-            finishBtn.style.display = 'none'; 
-        } else { 
-            filtered = dateOrders.filter(o => o.assignedDriver === currentUser.name && (o.status === 'Delivered' || o.status === 'Returned')); 
-            finishBtn.style.display = 'none'; 
-        } 
+        } else if (currentFilter === 'pool') { filtered = dateOrders.filter(o => !o.assignedDriver && o.status === 'Open'); finishBtn.style.display = 'none'; } 
+        else { filtered = dateOrders.filter(o => o.assignedDriver === currentUser.name && (o.status === 'Delivered' || o.status === 'Returned')); finishBtn.style.display = 'none'; } 
         
         if(filtered.length === 0) { document.getElementById('emptyState').classList.remove('d-none'); return; } 
         document.getElementById('emptyState').classList.add('d-none'); 
         
-        // --- UPDATED RENDER LOOP WITH COUNTER ---
         filtered.forEach((o, index) => { 
-            let actionBtn = ''; let headerClass = 'bg-open'; 
-            let numBadge = ''; // Start empty
-
-            if (currentFilter === 'pool') { 
-                headerClass = 'bg-pool'; 
-                actionBtn = `<button class="btn btn-sm btn-light text-dark fw-bold" onclick="event.stopPropagation(); claimOrder('${o.id}')"><i class="fa fa-plus"></i> Übernehmen</button>`; 
-            } 
-            else if (currentFilter === 'done') { 
-                headerClass = o.status === 'Delivered' ? 'bg-done' : 'bg-ret'; 
-            } 
-            else { 
-                // ONLY FOR "MINE"
-                actionBtn = `<span class="price-badge">${parseFloat(o.totalAmount).toFixed(2)}</span>`; 
-                // ADD NUMBER BADGE HERE
-                numBadge = `<div class="stop-badge">${index + 1}</div>`;
-            } 
+            let actionBtn = ''; let headerClass = 'bg-open'; let numBadge = ''; 
+            if (currentFilter === 'pool') { headerClass = 'bg-pool'; actionBtn = `<button class="btn btn-sm btn-light text-dark fw-bold" onclick="event.stopPropagation(); claimOrder('${o.id}')"><i class="fa fa-plus"></i> Übernehmen</button>`; } 
+            else if (currentFilter === 'done') { headerClass = o.status === 'Delivered' ? 'bg-done' : 'bg-ret'; } 
+            else { actionBtn = `<span class="price-badge">${parseFloat(o.totalAmount).toFixed(2)}</span>`; numBadge = `<div class="stop-badge">${index + 1}</div>`; } 
             
-            const fullAddr = o.customerName.split('|')[1] || o.customerName.split('|')[0]; 
+            const rawAddr = o.customerName.split('|')[1] || o.customerName.split('|')[0];
+            const fullAddr = rawAddr.replace(/\s+/g, ' ').trim();
             const routeBtn = `<a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fullAddr)}" target="_blank" class="btn btn-sm btn-outline-secondary ms-2" onclick="event.stopPropagation()"><i class="fa fa-map-marker-alt"></i></a>`; 
             const eyeBtn = o.invoiceImg ? `<button class="btn btn-sm btn-outline-primary ms-2" onclick="event.stopPropagation(); showInvoice('${o.id}')"><i class="fa fa-eye"></i></button>` : ''; 
-            
-            list.innerHTML += `
-            <div class="order-card" onclick="${currentFilter === 'mine' ? `openModal('${o.id}')` : ''}">
-                <div class="card-header-custom ${headerClass}">
-                    <div class="d-flex align-items-center" style="max-width: 70%">
-                        ${numBadge}
-                        <h6 class="m-0 text-truncate">${o.customerName.split('|')[0]}</h6>
-                    </div>
-                    <div>${actionBtn}</div>
-                </div>
-                <div class="p-3 d-flex justify-content-between align-items-center">
-                    <div>
-                        <small class="text-muted d-block text-truncate" style="max-width:200px">${fullAddr}</small>
-                        <span class="badge bg-light text-dark border mt-1">${o.items?.length||0} Pos.</span>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        ${currentFilter === 'mine' ? eyeBtn + routeBtn : ''}
-                    </div>
-                </div>
-            </div>`; 
+            list.innerHTML += `<div class="order-card" onclick="${currentFilter === 'mine' ? `openModal('${o.id}')` : ''}"><div class="card-header-custom ${headerClass}"><div class="d-flex align-items-center" style="max-width: 70%">${numBadge}<h6 class="m-0 text-truncate">${o.customerName.split('|')[0]}</h6></div><div>${actionBtn}</div></div><div class="p-3 d-flex justify-content-between align-items-center"><div><small class="text-muted d-block text-truncate" style="max-width:200px">${fullAddr}</small><span class="badge bg-light text-dark border mt-1">${o.items?.length||0} Pos.</span></div><div class="d-flex align-items-center">${currentFilter === 'mine' ? eyeBtn + routeBtn : ''}</div></div></div>`; 
         }); 
     }
+    
+    window.addInvoiceRow = () => {
+        const div = document.createElement('div');
+        div.className = 'd-flex gap-2 mb-2 invoice-row align-items-center';
+        div.innerHTML = `<input type="text" class="form-control inv-name" placeholder="Firma" style="flex: 2;"><input type="text" class="form-control inv-id" placeholder="Rechnungs-Nr." style="flex: 1.5;"><input type="number" class="form-control inv-amount" placeholder="CHF" style="width: 90px;" oninput="calcNet()"><button class="btn btn-outline-danger" onclick="this.parentElement.remove(); calcNet()">X</button>`;
+        document.getElementById('extInvoiceList').appendChild(div);
+    };
 
-    // --- SMART ROUTE (ANTI-HANG VERSION) ---
-    window.optimizeRoute = () => {
+    window.calcNet = () => { 
+        const cash = parseFloat(document.getElementById('repCashTotal').innerText)||0; 
+        const fuel = parseFloat(document.getElementById('expFuel').value)||0; 
+        const other = parseFloat(document.getElementById('expOther').value)||0; 
+        let extSum = 0;
+        document.querySelectorAll('.inv-amount').forEach(inp => { extSum += parseFloat(inp.value)||0; });
+        document.getElementById('netHandover').innerText = (cash + extSum - fuel - other).toFixed(2); 
+    };
+
+    window.openReportModal = () => { 
+        if(!currentUser) return;
+        document.getElementById('expFuel').value=''; 
+        document.getElementById('expOther').value='';
+        document.getElementById('extInvoiceList').innerHTML=''; 
+        document.getElementById('reportDate').value = document.getElementById('mainDateFilter').value; 
+        window.updateReportView(); 
+        new bootstrap.Modal(document.getElementById('reportModal')).show(); 
+        setTimeout(() => setupCanvas('sigPadReport', true), 600); 
+    };
+
+    window.updateReportView = () => { 
+        if(!currentUser) return;
+        let cash = 0; 
+        const selectedDate = document.getElementById('reportDate').value; 
+        const listDiv = document.getElementById('cashDetailsList');
+        listDiv.innerHTML = ''; 
+        allOrders.forEach(o => { 
+            const isMyDelivery = (o.deliveredBy === currentUser.name) || (!o.deliveredBy && o.assignedDriver === currentUser.name); 
+            if(o.status === 'Delivered' && o.deliveryDate === selectedDate && o.paymentMethod === 'Bar' && isMyDelivery) { 
+                const amt = parseFloat(o.finalAmount || o.totalAmount);
+                cash += amt; 
+                listDiv.innerHTML += `<div class="d-flex justify-content-between border-bottom py-1"><span class="text-truncate" style="max-width: 70%;">${o.customerName.split('|')[0]}</span><strong>${amt.toFixed(2)}</strong></div>`;
+            } 
+        }); 
+        if(listDiv.innerHTML === '') listDiv.innerHTML = '<div class="text-muted text-center">Keine Barzahlungen.</div>';
+        document.getElementById('repCashTotal').innerText = cash.toFixed(2); 
+        window.calcNet(); 
+    };
+
+    window.submitDailyReport = async () => { 
+        if(!currentUser) return alert("Bitte zuerst einloggen."); 
+        const vehicle = document.getElementById('vehSelect').value; 
+        if(!vehicle) return alert("Bitte Fahrzeug wählen!"); 
+
+        const blank = document.createElement('canvas');
+        blank.width = document.getElementById('sigPadReport').width;
+        blank.height = document.getElementById('sigPadReport').height;
+        if(document.getElementById('sigPadReport').toDataURL() === blank.toDataURL()) return alert("Bitte unterschreiben!"); 
+        const sig = document.getElementById('sigPadReport').toDataURL();
+
+        let extraInvoices = [];
+        document.querySelectorAll('.invoice-row').forEach(row => {
+            const name = row.querySelector('.inv-name').value;
+            const nr = row.querySelector('.inv-id').value;
+            const amt = row.querySelector('.inv-amount').value;
+            if(amt) extraInvoices.push({name, nr, amt});
+        });
+
+        const selectedDate = document.getElementById('reportDate').value;
+        let cashDetails = [];
+        allOrders.forEach(o => { 
+            const isMyDelivery = (o.deliveredBy === currentUser.name) || (!o.deliveredBy && o.assignedDriver === currentUser.name); 
+            if(o.status === 'Delivered' && o.deliveryDate === selectedDate && o.paymentMethod === 'Bar' && isMyDelivery) { 
+                cashDetails.push({ name: o.customerName.split('|')[0], amount: parseFloat(o.finalAmount || o.totalAmount) });
+            } 
+        });
+
+        await addDoc(collection(db, "driver_daily_reports"), { 
+            driver: currentUser.name, date: selectedDate, vehicle, totalCash: parseFloat(document.getElementById('repCashTotal').innerText), details: cashDetails, extraInvoices: extraInvoices, expFuel: parseFloat(document.getElementById('expFuel').value)||0, expOther: parseFloat(document.getElementById('expOther').value)||0, netHandover: document.getElementById('netHandover').innerText, signature: sig 
+        }); 
+
+        bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
+        const overlay = document.getElementById('successOverlay');
+        overlay.classList.remove('error'); document.getElementById('overlayIcon').className = 'fa fa-check-circle fa-5x mb-3';
+        document.getElementById('successText').innerText = "Gesendet!";
+        overlay.classList.add('show');
+        setTimeout(() => { overlay.classList.remove('show'); }, 2000);
+    };
+
+    // --- GEOCODER WITH GUARD & SWISS RESTRICTION ---
+    const geocodeAddress = (geocoder, address, checkActive, retries = 3, delay = 1000) =>
+        new Promise((resolve, reject) => {
+            if (!checkActive()) return reject("CANCELLED"); 
+
+            // ADDED: componentRestrictions: { country: 'CH' }
+            geocoder.geocode({ address, componentRestrictions: { country: 'CH' } }, (results, status) => {
+                if (!checkActive()) return reject("CANCELLED");
+
+                if (status === "OK" && results?.[0]) return resolve(results[0]);
+
+                if (status === "OVER_QUERY_LIMIT" && retries > 0) {
+                    console.warn(`Rate limit for "${address}". Retry in ${delay}ms...`);
+                    return setTimeout(() => {
+                        if (!checkActive()) return reject("CANCELLED");
+                        geocodeAddress(geocoder, address, checkActive, retries - 1, delay * 2).then(resolve, reject);
+                    }, delay);
+                }
+                reject(status);
+            });
+        });
+
+    const performOptimization = async (startLat, startLng, myOrders, runId) => {
+        // TOP LEVEL GUARD
+        if(!isOptimizing || runId !== optimizeRunId) return;
+
+        const isActive = () => isOptimizing && runId === optimizeRunId;
+
+        uiSetText("Analysiere Adressen...");
+        
+        try {
+            // FIX: MAPS SAFE INIT
+            if (!window.google || !window.google.maps) throw new Error("Maps API fehlt.");
+            const geocoder = new google.maps.Geocoder();
+            
+            const locs = [];
+            
+            for(let i=0; i<myOrders.length; i++) {
+                if(!isActive()) return;
+
+                uiSetText(`Analysiere ${i+1}/${myOrders.length}...`);
+                const o = myOrders[i];
+                let rawAddr = null;
+                
+                // --- SMART ADDRESS DETECTION ---
+                // 1. Try Pipe
+                const parts = o.customerName.split('|');
+                if(parts.length > 1) { 
+                    rawAddr = parts[1].trim(); 
+                } 
+                // 2. Try Fields (if present in future)
+                else if (o.address || o.street) { 
+                     const str = o.street || o.address || '';
+                     const cit = o.city || o.ort || '';
+                     const zp = o.zip || o.plz || '';
+                     rawAddr = `${str}, ${zp} ${cit}`;
+                }
+                // 3. Fallback: Use Name (Google CH will find it!)
+                else {
+                    rawAddr = o.customerName;
+                }
+
+                if(!rawAddr || rawAddr.length < 2) { 
+                     locs.push({ id: o.id, lat: null, lng: null }); continue; 
+                }
+
+                const cleanAddr = rawAddr.replace(/\s+/g, ' ').trim(); 
+                const cacheKey = `geo:${cleanAddr.toLowerCase()}`;
+                
+                try {
+                    const cached = localStorage.getItem(cacheKey);
+                    if(cached) {
+                        const {lat, lng} = JSON.parse(cached);
+                        locs.push({ id: o.id, lat, lng });
+                    } else {
+                        await new Promise(r => setTimeout(r, 200)); 
+                        // PASS GUARD
+                        const res = await geocodeAddress(geocoder, cleanAddr, isActive);
+                        const l = res.geometry.location;
+                        const lat = l.lat(); const lng = l.lng();
+                        localStorage.setItem(cacheKey, JSON.stringify({lat, lng}));
+                        locs.push({ id: o.id, lat, lng });
+                    }
+                } catch(e) { 
+                    if(e === "CANCELLED") return; 
+                    locs.push({ id: o.id, lat: null, lng: null }); 
+                }
+            }
+
+            if(!isActive()) return;
+
+            uiSetText("Berechne beste Route...");
+            let currentPos = new google.maps.LatLng(startLat, startLng);
+            const sortedIds = [];
+            const toVisit = locs.filter(l => l.lat !== null);
+            const others = locs.filter(l => l.lat === null).map(l => l.id); 
+
+            while(toVisit.length > 0) {
+                let bestIdx = -1;
+                let bestDist = Infinity;
+                for(let i=0; i<toVisit.length; i++) {
+                    const dest = new google.maps.LatLng(toVisit[i].lat, toVisit[i].lng);
+                    const d = google.maps.geometry.spherical.computeDistanceBetween(currentPos, dest);
+                    if(d < bestDist) { bestDist = d; bestIdx = i; }
+                }
+                if(bestIdx !== -1) {
+                    const next = toVisit.splice(bestIdx, 1)[0];
+                    sortedIds.push(next.id);
+                    currentPos = new google.maps.LatLng(next.lat, next.lng);
+                }
+            }
+            
+            if(!isActive()) return;
+
+            sortedOrderIds = [...sortedIds, ...others];
+            window.renderOrders();
+            
+            const overlay = document.getElementById('successOverlay');
+            overlay.classList.remove('error'); document.getElementById('overlayIcon').className = 'fa fa-check-circle fa-5x mb-3';
+            document.getElementById('successText').innerText = "Optimiert!";
+            overlay.classList.add('show');
+            setTimeout(() => { overlay.classList.remove('show'); }, 1500);
+
+        } catch (error) {
+            if(runId !== optimizeRunId) return; 
+            console.error(error);
+            const overlay = document.getElementById('successOverlay');
+            overlay.classList.add('error');
+            document.getElementById('overlayIcon').className = 'fa fa-exclamation-triangle fa-5x mb-3';
+            document.getElementById('successText').innerText = "Fehler!";
+            overlay.classList.add('show');
+            setTimeout(() => { overlay.classList.remove('show'); overlay.classList.remove('error'); }, 2500);
+        } finally {
+            if(runId === optimizeRunId) {
+                resetOptimizeUI(); 
+                isOptimizing = false; 
+            }
+        }
+    };
+
+    window.optimizeRoute = async () => {
+        if(!currentUser) return alert("Bitte zuerst einloggen.");
         if(currentFilter !== 'mine') return alert("Bitte gehe zuerst auf 'Meine Route'.");
         
+        if(isOptimizing) return;
+        isOptimizing = true;
+        
+        optimizeRunId++;
+        const currentRunId = optimizeRunId;
+
         const selectedDate = document.getElementById('mainDateFilter').value;
         const myOrders = allOrders.filter(o => o.deliveryDate === selectedDate && o.assignedDriver === currentUser.name && o.status !== 'Delivered' && o.status !== 'Returned');
         
-        if(myOrders.length < 2) return alert("Zu wenig Aufträge zum Sortieren (Min. 2).");
-
-        const loader = document.getElementById('loadingOverlay');
-        const loadText = document.getElementById('loadingText');
-        loader.classList.remove('d-none');
-        loadText.innerText = "Suche GPS Signal...";
-
-        const runGoogleOptimization = (originLat, originLng) => {
-            loadText.innerText = "Frage Google nach Distanzen...";
-            
-            const destinations = myOrders.map(o => {
-                const parts = o.customerName.split('|');
-                return parts.length > 1 ? parts[1].trim() : parts[0].trim();
-            });
-
-            const service = new google.maps.DistanceMatrixService();
-            service.getDistanceMatrix({
-                origins: [{lat: originLat, lng: originLng}],
-                destinations: destinations,
-                travelMode: 'DRIVING',
-            }, (response, status) => {
-                loader.classList.add('d-none');
-                
-                if (status === 'OK') {
-                    const results = response.rows[0].elements;
-                    const orderDistances = myOrders.map((o, index) => {
-                        return { 
-                            id: o.id, 
-                            dist: results[index].status === 'OK' ? results[index].distance.value : 99999999 
-                        };
-                    });
-                    orderDistances.sort((a, b) => a.dist - b.dist);
-                    sortedOrderIds = orderDistances.map(od => od.id);
-                    alert("Route erfolgreich optimiert! 🚀");
-                    window.renderOrders();
-                } else {
-                    alert("Google Fehler: " + status + "\n(Bitte API 'Distance Matrix' aktivieren!)");
-                }
-            });
-        };
-
-        if (navigator.geolocation) {
-            const geoOptions = { timeout: 8000, enableHighAccuracy: false };
-            navigator.geolocation.getCurrentPosition(
-                (position) => { runGoogleOptimization(position.coords.latitude, position.coords.longitude); },
-                (error) => { 
-                    alert("GPS nicht gefunden. Nutze Standard-Startpunkt (Bern).");
-                    runGoogleOptimization(46.947974, 7.447447); 
-                },
-                geoOptions
-            );
-        } else {
-            alert("Kein GPS Support. Nutze Standard-Startpunkt.");
-            runGoogleOptimization(46.947974, 7.447447);
+        // SAFE UI INIT
+        if(myOrders.length < 2) { 
+            isOptimizing = false; 
+            resetOptimizeUI(); 
+            return alert("Zu wenig Aufträge."); 
         }
+        if(!window.google || !window.google.maps || !window.google.maps.geometry) { 
+            isOptimizing = false; 
+            resetOptimizeUI(); 
+            return alert("Maps lädt noch..."); 
+        }
+
+        uiSetBtn(true);
+        uiSetLoader(true);
+        uiSetText("Hole GPS...");
+
+        if(optimizeTimeout) clearTimeout(optimizeTimeout);
+        optimizeTimeout = setTimeout(() => {
+            if(isOptimizing && currentRunId === optimizeRunId) {
+                isOptimizing = false;
+                optimizeRunId++; 
+                resetOptimizeUI(); 
+                
+                const overlay = document.getElementById('successOverlay');
+                overlay.classList.add('error');
+                document.getElementById('overlayIcon').className = 'fa fa-exclamation-triangle fa-5x mb-3';
+                document.getElementById('successText').innerText = "Zeitüberschreitung!";
+                overlay.classList.add('show');
+                setTimeout(() => { overlay.classList.remove('show'); overlay.classList.remove('error'); }, 2000);
+            }
+        }, 20000);
+
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                if(currentRunId !== optimizeRunId) return;
+                performOptimization(pos.coords.latitude, pos.coords.longitude, myOrders, currentRunId);
+            },
+            (err) => {
+                if(currentRunId !== optimizeRunId) return;
+                setStatus('net', 'GPS Fehler - Nutze Fallback');
+                performOptimization(FALLBACK_START.lat, FALLBACK_START.lng, myOrders, currentRunId);
+            }
+        );
     };
 
     window.showInvoice = (id) => { const o = allOrders.find(x => x.id === id); if(o && o.invoiceImg) { document.getElementById('fullInvoiceImg').src = o.invoiceImg; new bootstrap.Modal(document.getElementById('invoiceModal')).show(); } };
     window.showLoadingList = () => { const selectedDate = document.getElementById('mainDateFilter').value; const myOrders = allOrders.filter(o => o.deliveryDate === selectedDate && o.assignedDriver === currentUser.name && o.status !== 'Delivered' && o.status !== 'Returned'); const agg = {}; myOrders.forEach(o => { if(o.items) o.items.forEach(i => { const n = i.name.trim(); const qty = parseFloat(i.qty) || 0; const unit = i.qty.replace(/[0-9.]/g, '').trim(); if(!agg[n]) agg[n] = {count:0, unit:unit}; agg[n].count += qty; }); }); const listBody = document.getElementById('loadingListBody'); listBody.innerHTML = ''; if(Object.keys(agg).length === 0) listBody.innerHTML = '<li class="list-group-item text-center text-muted">Leer</li>'; Object.keys(agg).sort().forEach(k => { listBody.innerHTML += `<li class="list-group-item d-flex justify-content-between"><span>${k}</span><strong>${agg[k].count} ${agg[k].unit}</strong></li>`; }); new bootstrap.Modal(document.getElementById('loadingListModal')).show(); };
-    window.claimOrder = async (id) => { if(confirm("Auftrag übernehmen?")) { await updateDoc(doc(db, "orders", id), { assignedDriver: currentUser.name }); window.filterOrders('mine'); } };
+    window.claimOrder = async (id) => { if(!currentUser) return alert("Bitte zuerst einloggen."); if(confirm("Auftrag übernehmen?")) { await updateDoc(doc(db, "orders", id), { assignedDriver: currentUser.name }); window.filterOrders('mine'); } };
     window.openModal = (id) => { const o = allOrders.find(x => x.id === id); if(!o) return; currentOrderID = id; document.getElementById('modalCustName').innerText = o.customerName.split('|')[0]; document.getElementById('modalTotalInput').value = parseFloat(o.totalAmount).toFixed(2); document.getElementById('driverNote').value = o.deliveryNote || ''; const iList = document.getElementById('modalItems'); iList.innerHTML = ''; if(o.items) o.items.forEach(i => iList.innerHTML += `<div class="d-flex justify-content-between border-bottom py-1"><span>${i.qty} ${i.name}</span><span>${i.total.toFixed(2)}</span></div>`); toggleReturnView(false); new bootstrap.Modal(document.getElementById('deliveryModal')).show(); setTimeout(() => setupCanvas('sigPad', false), 500); };
     window.toggleReturnView = (isReturn) => { document.getElementById('viewSuccess').classList.toggle('d-none', isReturn); document.getElementById('viewReturn').classList.toggle('d-none', !isReturn); document.getElementById('btnConfirm').classList.toggle('d-none', isReturn); document.getElementById('btnConfirmRet').classList.toggle('d-none', !isReturn); }
-    window.openReportModal = () => { document.getElementById('expFuel').value=''; document.getElementById('reportDate').value = document.getElementById('mainDateFilter').value; window.updateReportView(); new bootstrap.Modal(document.getElementById('reportModal')).show(); setTimeout(() => setupCanvas('sigPadReport', true), 500); };
-    window.updateReportView = () => { let cash = 0; const selectedDate = document.getElementById('reportDate').value; allOrders.forEach(o => { const isMyDelivery = (o.deliveredBy === currentUser.name) || (!o.deliveredBy && o.assignedDriver === currentUser.name); if(o.status === 'Delivered' && o.deliveryDate === selectedDate && o.paymentMethod === 'Bar' && isMyDelivery) { cash += parseFloat(o.finalAmount || o.totalAmount); } }); document.getElementById('repCashTotal').innerText = cash.toFixed(2); window.calcNet(); };
-    window.calcNet = () => { const cash = parseFloat(document.getElementById('repCashTotal').innerText)||0; const fuel = parseFloat(document.getElementById('expFuel').value)||0; const other = parseFloat(document.getElementById('expOther').value)||0; document.getElementById('netHandover').innerText = (cash - fuel - other).toFixed(2); };
-    window.submitDailyReport = async () => { const sig = document.getElementById('sigPadReport').toDataURL(); const vehicle = document.getElementById('vehSelect').value; if(!vehicle) return alert("Bitte Fahrzeug wählen!"); await addDoc(collection(db, "driver_daily_reports"), { driver: currentUser.name, date: new Date().toISOString(), vehicle, totalCash: parseFloat(document.getElementById('repCashTotal').innerText), netHandover: document.getElementById('netHandover').innerText, signature: sig }); alert("Tagesabschluss gesendet!"); bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide(); };
-
-    function setupCanvas(id, isReport) { const cvs = document.getElementById(id); const ctx = cvs.getContext('2d'); const rect = cvs.getBoundingClientRect(); cvs.width = rect.width; cvs.height = rect.height; ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.strokeStyle = "#000"; if(isReport) { reportCanvas = cvs; reportCtx = ctx; } else { sigCanvas = cvs; sigCtx = ctx; } const start=(e)=>{e.preventDefault(); isDrawing=true; ctx.beginPath(); const p=getPos(e,cvs); ctx.moveTo(p.x,p.y);}; const move=(e)=>{if(!isDrawing)return; e.preventDefault(); const p=getPos(e,cvs); ctx.lineTo(p.x,p.y); ctx.stroke();}; const end=()=>isDrawing=false; ['touchstart','mousedown'].forEach(e=>cvs.addEventListener(e,start)); ['touchmove','mousemove'].forEach(e=>cvs.addEventListener(e,move)); ['touchend','mouseup'].forEach(e=>cvs.addEventListener(e,end)); }
+    
+    function setupCanvas(id, isReport) { 
+        let cvs = document.getElementById(id);
+        const newCvs = cvs.cloneNode(true);
+        cvs.parentNode.replaceChild(newCvs, cvs);
+        cvs = newCvs;
+        const ctx = cvs.getContext('2d'); 
+        const parent = cvs.parentElement;
+        cvs.width = parent.offsetWidth; cvs.height = parent.offsetHeight; 
+        ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.strokeStyle = "#000"; 
+        if(isReport) { reportCanvas = cvs; reportCtx = ctx; } else { sigCanvas = cvs; sigCtx = ctx; } 
+        const start=(e)=>{e.preventDefault(); isDrawing=true; ctx.beginPath(); const p=getPos(e,cvs); ctx.moveTo(p.x,p.y);}; 
+        const move=(e)=>{if(!isDrawing)return; e.preventDefault(); const p=getPos(e,cvs); ctx.lineTo(p.x,p.y); ctx.stroke();}; 
+        const end=()=>isDrawing=false; 
+        ['touchstart','mousedown'].forEach(e=>cvs.addEventListener(e,start)); ['touchmove','mousemove'].forEach(e=>cvs.addEventListener(e,move)); ['touchend','mouseup'].forEach(e=>cvs.addEventListener(e,end)); 
+    }
+    
     function getPos(e,c) { const r=c.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:t.clientX-r.left, y:t.clientY-r.top}; }
-    window.clearSig = (id) => document.getElementById(id).getContext('2d').clearRect(0,0,1000,1000);
-    window.finishOrder = async (status) => { let u = { status, deliveredBy: currentUser.name, deliveredAt: new Date().toISOString() }; if(status==='Delivered'){ u.paymentMethod = document.querySelector('input[name="payMethod"]:checked').value; u.finalAmount = parseFloat(document.getElementById('modalTotalInput').value)||0; u.deliveryNote = document.getElementById('driverNote').value; u.signature = sigCanvas.toDataURL(); } else { u.returnReason = document.getElementById('returnReason').value; } await updateDoc(doc(db, "orders", currentOrderID), u); bootstrap.Modal.getInstance(document.getElementById('deliveryModal')).hide(); };
+    window.clearSig = (id) => { const c = document.getElementById(id); const ctx = c.getContext('2d'); ctx.clearRect(0, 0, c.width, c.height); };
+    window.finishOrder = async (status) => { if(!currentUser) return alert("Bitte zuerst einloggen."); let u = { status, deliveredBy: currentUser.name, deliveredAt: new Date().toISOString() }; if(status==='Delivered'){ u.paymentMethod = document.querySelector('input[name="payMethod"]:checked').value; u.finalAmount = parseFloat(document.getElementById('modalTotalInput').value)||0; u.deliveryNote = document.getElementById('driverNote').value; u.signature = sigCanvas.toDataURL(); } else { u.returnReason = document.getElementById('returnReason').value; } await updateDoc(doc(db, "orders", currentOrderID), u); bootstrap.Modal.getInstance(document.getElementById('deliveryModal')).hide(); };
     window.toggleTheme = () => { document.body.classList.toggle('dark-mode'); localStorage.setItem('driverTheme', document.body.classList.contains('dark-mode') ? 'dark' : 'light'); document.getElementById('themeIcon').className = document.body.classList.contains('dark-mode') ? 'fa fa-sun' : 'fa fa-moon'; };
     window.checkTheme = () => { if(localStorage.getItem('driverTheme')==='dark') { document.body.classList.add('dark-mode'); document.getElementById('themeIcon').className = 'fa fa-sun'; } };
 </script>
-
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_F92tTWrN5aUF6iCIkQv5s_4xwIkm81k&libraries=geometry"></script>
-
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_F92tTWrN5aUF6iCIkQv5s_4xwIkm81k&libraries=geometry" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
