@@ -84,6 +84,7 @@
         .date-floater input { border: none; background: transparent; font-weight: bold; color: var(--text); text-align: right; outline: none; }
         .price-input { font-size: 2.5rem; font-weight: bold; color: #2c3e50; border: none; background: transparent; text-align: center; width: 100%; outline: none; border-bottom: 2px dashed #ccc; }
         
+        /* Canvas (still needed for Report signature) */
         canvas { border: 2px dashed #bdc3c7; border-radius: 12px; width: 100%; background: #fff; touch-action: none; display: block; }
         
         #loadingOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; }
@@ -155,7 +156,62 @@
 
 <div class="modal fade" id="loadingListModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-dark text-white"><h5 class="modal-title">Ladeliste</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><ul class="list-group list-group-flush" id="loadingListBody"></ul></div><div class="modal-footer"><button class="btn btn-dark w-100" data-bs-dismiss="modal">OK</button></div></div></div></div>
 
-<div class="modal fade" id="deliveryModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0"><h5 class="modal-title fw-bold" id="modalCustName">...</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="viewSuccess"><div class="text-center mb-3"><label class="small text-muted">BETRAG (CHF)</label><input type="number" id="modalTotalInput" class="price-input" step="0.05"></div><div class="row g-2 mb-3"><div class="col-4"><input type="radio" class="btn-check" name="payMethod" id="payCash" value="Bar" checked><label class="btn btn-outline-success w-100" for="payCash">Bar</label></div><div class="col-4"><input type="radio" class="btn-check" name="payMethod" id="payCard" value="Card"><label class="btn btn-outline-primary w-100" for="payCard">Karte</label></div><div class="col-4"><input type="radio" class="btn-check" name="payMethod" id="payInv" value="Rechnung"><label class="btn btn-outline-warning w-100" for="payInv">Rech.</label></div></div><textarea id="driverNote" class="form-control mb-3" rows="1" placeholder="Notiz..."></textarea><canvas id="sigPad" height="150"></canvas><div class="text-end mb-3"><small class="text-danger" onclick="clearSig('sigPad')">Clear Sign</small></div></div><div id="viewReturn" class="d-none"><div class="alert alert-danger">Nicht geliefert?</div><select id="returnReason" class="form-select mb-2"><option>Kunde nicht da</option><option>Geschlossen</option><option>Kein Geld</option><option>Verweigert</option></select></div><div id="modalItems" class="border-top pt-3 small"></div></div><div class="modal-footer"><button id="btnNotDelivered" class="btn btn-outline-danger" onclick="toggleReturnView(true)">Storno</button><button id="btnConfirm" class="btn btn-success flex-grow-1" onclick="finishOrder('Delivered')">OK</button><button id="btnConfirmRet" class="btn btn-danger flex-grow-1 d-none" onclick="finishOrder('Returned')">STORNIEREN</button></div></div></div></div>
+<!-- ✅ DELIVERY MODAL: Signature removed -->
+<div class="modal fade" id="deliveryModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold" id="modalCustName">...</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div id="viewSuccess">
+          <div class="text-center mb-3">
+            <label class="small text-muted">BETRAG (CHF)</label>
+            <input type="number" id="modalTotalInput" class="price-input" step="0.05">
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-4">
+              <input type="radio" class="btn-check" name="payMethod" id="payCash" value="Bar" checked>
+              <label class="btn btn-outline-success w-100" for="payCash">Bar</label>
+            </div>
+            <div class="col-4">
+              <input type="radio" class="btn-check" name="payMethod" id="payCard" value="Card">
+              <label class="btn btn-outline-primary w-100" for="payCard">Karte</label>
+            </div>
+            <div class="col-4">
+              <input type="radio" class="btn-check" name="payMethod" id="payInv" value="Rechnung">
+              <label class="btn btn-outline-warning w-100" for="payInv">Rech.</label>
+            </div>
+          </div>
+
+          <textarea id="driverNote" class="form-control mb-3" rows="1" placeholder="Notiz..."></textarea>
+          <!-- signature area removed -->
+        </div>
+
+        <div id="viewReturn" class="d-none">
+          <div class="alert alert-danger">Nicht geliefert?</div>
+          <select id="returnReason" class="form-select mb-2">
+            <option>Kunde nicht da</option>
+            <option>Geschlossen</option>
+            <option>Kein Geld</option>
+            <option>Verweigert</option>
+          </select>
+        </div>
+
+        <div id="modalItems" class="border-top pt-3 small"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btnNotDelivered" class="btn btn-outline-danger" onclick="toggleReturnView(true)">Storno</button>
+        <button id="btnConfirm" class="btn btn-success flex-grow-1" onclick="finishOrder('Delivered')">OK</button>
+        <button id="btnConfirmRet" class="btn btn-danger flex-grow-1 d-none" onclick="finishOrder('Returned')">STORNIEREN</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="modal fade" id="reportModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-fullscreen-md-down modal-dialog-centered">
@@ -218,8 +274,11 @@
     const FALLBACK_START = { lat: 46.947974, lng: 7.447447 }; 
 
     let currentUser = null, allOrders = [], currentFilter = 'mine', sortedOrderIds = [];
-    let sigCanvas, sigCtx, isDrawing = false, currentOrderID = null;
-    let reportCanvas, reportCtx; 
+    let isDrawing = false, currentOrderID = null;
+
+    // Report signature canvas only (keep!)
+    let reportCanvas, reportCtx;
+
     let gpsInterval = null; 
     let isOptimizing = false; 
     let orderUnsubscribe = null; 
@@ -245,7 +304,22 @@
         if(gpsInterval) clearInterval(gpsInterval);
     });
 
-    const numpad = document.getElementById('numpad'); [1,2,3,4,5,6,7,8,9,'C',0,'➜'].forEach(n => { const btn=document.createElement('div'); btn.className='pin-btn'; btn.innerHTML=n; if(n==='➜'){btn.style.background='#27ae60'; btn.onclick=()=>tryLogin(document.getElementById('pinInput').value);}else if(n==='C'){btn.style.background='#e74c3c'; btn.onclick=()=>document.getElementById('pinInput').value='';}else{btn.onclick=()=>document.getElementById('pinInput').value+=n;} numpad.appendChild(btn); });
+    const numpad = document.getElementById('numpad'); 
+    [1,2,3,4,5,6,7,8,9,'C',0,'➜'].forEach(n => { 
+        const btn=document.createElement('div'); 
+        btn.className='pin-btn'; 
+        btn.innerHTML=n; 
+        if(n==='➜'){
+            btn.style.background='#27ae60'; 
+            btn.onclick=()=>tryLogin(document.getElementById('pinInput').value);
+        } else if(n==='C'){
+            btn.style.background='#e74c3c'; 
+            btn.onclick=()=>document.getElementById('pinInput').value='';
+        } else {
+            btn.onclick=()=>document.getElementById('pinInput').value+=n;
+        } 
+        numpad.appendChild(btn); 
+    });
 
     async function tryLogin(pin) { 
         if(!pin) return; 
@@ -336,18 +410,33 @@
         }, 10000); 
     }
 
-    async function loadVehicles() { const s = await getDocs(collection(db, "vehicles")); const sel = document.getElementById('vehSelect'); sel.innerHTML = '<option value="">Fahrzeug wählen...</option>'; s.forEach(d => sel.innerHTML += `<option value="${d.data().plate}">${d.data().plate}</option>`); }
+    async function loadVehicles() { 
+        const s = await getDocs(collection(db, "vehicles")); 
+        const sel = document.getElementById('vehSelect'); 
+        sel.innerHTML = '<option value="">Fahrzeug wählen...</option>'; 
+        s.forEach(d => sel.innerHTML += `<option value="${d.data().plate}">${d.data().plate}</option>`); 
+    }
     
     function startLiveSync() { 
         if(orderUnsubscribe) orderUnsubscribe();
-        orderUnsubscribe = onSnapshot(query(collection(db, "orders")), (snapshot) => { allOrders = []; snapshot.forEach(doc => allOrders.push({id: doc.id, ...doc.data()})); window.renderOrders(); }); 
+        orderUnsubscribe = onSnapshot(query(collection(db, "orders")), (snapshot) => { 
+            allOrders = []; 
+            snapshot.forEach(doc => allOrders.push({id: doc.id, ...doc.data()})); 
+            window.renderOrders(); 
+        }); 
     }
     
-    window.filterOrders = (type) => { currentFilter = type; document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active')); document.getElementById('tab-'+type).classList.add('active'); window.renderOrders(); };
+    window.filterOrders = (type) => { 
+        currentFilter = type; 
+        document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active')); 
+        document.getElementById('tab-'+type).classList.add('active'); 
+        window.renderOrders(); 
+    };
     
     window.renderOrders = () => { 
         if(!currentUser) return; 
-        const list = document.getElementById('ordersList'); list.innerHTML = ''; 
+        const list = document.getElementById('ordersList'); 
+        list.innerHTML = ''; 
         const selectedDate = document.getElementById('mainDateFilter').value; 
         const finishBtn = document.getElementById('finishBtnContainer'); 
         const search = document.getElementById('driverSearch').value.toLowerCase(); 
@@ -370,23 +459,51 @@
                     return idxA - idxB;
                 });
             }
-        } else if (currentFilter === 'pool') { filtered = dateOrders.filter(o => !o.assignedDriver && o.status === 'Open'); finishBtn.style.display = 'none'; } 
-        else { filtered = dateOrders.filter(o => o.assignedDriver === currentUser.name && (o.status === 'Delivered' || o.status === 'Returned')); finishBtn.style.display = 'none'; } 
+        } else if (currentFilter === 'pool') { 
+            filtered = dateOrders.filter(o => !o.assignedDriver && o.status === 'Open'); 
+            finishBtn.style.display = 'none'; 
+        } else { 
+            filtered = dateOrders.filter(o => o.assignedDriver === currentUser.name && (o.status === 'Delivered' || o.status === 'Returned')); 
+            finishBtn.style.display = 'none'; 
+        } 
         
-        if(filtered.length === 0) { document.getElementById('emptyState').classList.remove('d-none'); return; } 
+        if(filtered.length === 0) { 
+            document.getElementById('emptyState').classList.remove('d-none'); 
+            return; 
+        } 
         document.getElementById('emptyState').classList.add('d-none'); 
         
         filtered.forEach((o, index) => { 
-            let actionBtn = ''; let headerClass = 'bg-open'; let numBadge = ''; 
-            if (currentFilter === 'pool') { headerClass = 'bg-pool'; actionBtn = `<button class="btn btn-sm btn-light text-dark fw-bold" onclick="event.stopPropagation(); claimOrder('${o.id}')"><i class="fa fa-plus"></i> Übernehmen</button>`; } 
-            else if (currentFilter === 'done') { headerClass = o.status === 'Delivered' ? 'bg-done' : 'bg-ret'; } 
-            else { actionBtn = `<span class="price-badge">${parseFloat(o.totalAmount).toFixed(2)}</span>`; numBadge = `<div class="stop-badge">${index + 1}</div>`; } 
+            let actionBtn = ''; 
+            let headerClass = 'bg-open'; 
+            let numBadge = ''; 
+            if (currentFilter === 'pool') { 
+                headerClass = 'bg-pool'; 
+                actionBtn = `<button class="btn btn-sm btn-light text-dark fw-bold" onclick="event.stopPropagation(); claimOrder('${o.id}')"><i class="fa fa-plus"></i> Übernehmen</button>`; 
+            } else if (currentFilter === 'done') { 
+                headerClass = o.status === 'Delivered' ? 'bg-done' : 'bg-ret'; 
+            } else { 
+                actionBtn = `<span class="price-badge">${parseFloat(o.totalAmount).toFixed(2)}</span>`; 
+                numBadge = `<div class="stop-badge">${index + 1}</div>`; 
+            } 
             
             const rawAddr = o.customerName.split('|')[1] || o.customerName.split('|')[0];
             const fullAddr = rawAddr.replace(/\s+/g, ' ').trim();
             const routeBtn = `<a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fullAddr)}" target="_blank" class="btn btn-sm btn-outline-secondary ms-2" onclick="event.stopPropagation()"><i class="fa fa-map-marker-alt"></i></a>`; 
             const eyeBtn = o.invoiceImg ? `<button class="btn btn-sm btn-outline-primary ms-2" onclick="event.stopPropagation(); showInvoice('${o.id}')"><i class="fa fa-eye"></i></button>` : ''; 
-            list.innerHTML += `<div class="order-card" onclick="${currentFilter === 'mine' ? `openModal('${o.id}')` : ''}"><div class="card-header-custom ${headerClass}"><div class="d-flex align-items-center" style="max-width: 70%">${numBadge}<h6 class="m-0 text-truncate">${o.customerName.split('|')[0]}</h6></div><div>${actionBtn}</div></div><div class="p-3 d-flex justify-content-between align-items-center"><div><small class="text-muted d-block text-truncate" style="max-width:200px">${fullAddr}</small><span class="badge bg-light text-dark border mt-1">${o.items?.length||0} Pos.</span></div><div class="d-flex align-items-center">${currentFilter === 'mine' ? eyeBtn + routeBtn : ''}</div></div></div>`; 
+            list.innerHTML += `<div class="order-card" onclick="${currentFilter === 'mine' ? `openModal('${o.id}')` : ''}">
+                <div class="card-header-custom ${headerClass}">
+                    <div class="d-flex align-items-center" style="max-width: 70%">${numBadge}<h6 class="m-0 text-truncate">${o.customerName.split('|')[0]}</h6></div>
+                    <div>${actionBtn}</div>
+                </div>
+                <div class="p-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted d-block text-truncate" style="max-width:200px">${fullAddr}</small>
+                        <span class="badge bg-light text-dark border mt-1">${o.items?.length||0} Pos.</span>
+                    </div>
+                    <div class="d-flex align-items-center">${currentFilter === 'mine' ? eyeBtn + routeBtn : ''}</div>
+                </div>
+            </div>`; 
         }); 
     }
     
@@ -414,7 +531,7 @@
         if(!currentUser) return;
         document.getElementById('expFuel').value=''; 
         document.getElementById('expOther').value='';
-        document.getElementById('dailyNote').value=''; // Reset note
+        document.getElementById('dailyNote').value='';
         document.getElementById('extInvoiceList').innerHTML=''; 
         document.getElementById('reportDate').value = document.getElementById('mainDateFilter').value; 
         window.updateReportView(); 
@@ -452,11 +569,9 @@
         if(document.getElementById('sigPadReport').toDataURL() === blank.toDataURL()) return alert("Bitte unterschreiben!"); 
         const sig = document.getElementById('sigPadReport').toDataURL();
 
-        // --- NOTE & TIME CAPTURE (V18.0) ---
         const note = document.getElementById('dailyNote').value;
-        const submittedAt = new Date().toISOString(); // The actual sending time
+        const submittedAt = new Date().toISOString();
 
-        // --- THE KITCHEN SINK STRATEGY ---
         const rows = Array.from(document.querySelectorAll('#extInvoiceList .invoice-row'));
         const inkassoItems = [];
         let inkassoHtml = "";
@@ -499,25 +614,23 @@
         await addDoc(collection(db, "driver_daily_reports"), { 
             driver: currentUser.name, 
             date: selectedDate, 
-            submittedAt: submittedAt, // NEW: Real timestamp
+            submittedAt: submittedAt,
             vehicle, 
             totalCash: cashTotal, 
             details: cashDetails, 
 
-            // INKASSO
             extraInvoices: inkassoItems,          
             inkassoItems: inkassoItems,           
             openInvoices: inkassoItems,           
             inkassoDetails: inkassoItems,         
             totalInkasso: totalInkasso,           
             inkassoTotal: totalInkasso,           
-            openInvoiceTotal: totalInkasso,        
+            openInvoiceTotal: totalInkasso,
 
-            // NOTES & EXPENSES
             expFuel: fuel, 
             expOther: other,
-            note: note, // NEW
-            expNote: note, // NEW (Mapped to where Admin already looks!)
+            note: note,
+            expNote: note,
             netHandover: net, 
             signature: sig,
 
@@ -533,7 +646,8 @@
 
         bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
         const overlay = document.getElementById('successOverlay');
-        overlay.classList.remove('error'); document.getElementById('overlayIcon').className = 'fa fa-check-circle fa-5x mb-3';
+        overlay.classList.remove('error'); 
+        document.getElementById('overlayIcon').className = 'fa fa-check-circle fa-5x mb-3';
         document.getElementById('successText').innerText = "Gesendet!";
         overlay.classList.add('show');
         setTimeout(() => { overlay.classList.remove('show'); }, 2000);
@@ -574,7 +688,12 @@
                 let rawAddr = null;
                 const parts = o.customerName.split('|');
                 if(parts.length > 1) { rawAddr = parts[1].trim(); } 
-                else if (o.address || o.street) { const str = o.street || o.address || ''; const cit = o.city || o.ort || ''; const zp = o.zip || o.plz || ''; rawAddr = `${str}, ${zp} ${cit}`; }
+                else if (o.address || o.street) { 
+                    const str = o.street || o.address || ''; 
+                    const cit = o.city || o.ort || ''; 
+                    const zp = o.zip || o.plz || ''; 
+                    rawAddr = `${str}, ${zp} ${cit}`; 
+                }
                 else { rawAddr = o.customerName; }
 
                 if(!rawAddr || rawAddr.length < 2) { locs.push({ id: o.id, lat: null, lng: null }); continue; }
@@ -583,8 +702,10 @@
                 
                 try {
                     const cached = localStorage.getItem(cacheKey);
-                    if(cached) { const {lat, lng} = JSON.parse(cached); locs.push({ id: o.id, lat, lng }); } 
-                    else {
+                    if(cached) { 
+                        const {lat, lng} = JSON.parse(cached); 
+                        locs.push({ id: o.id, lat, lng }); 
+                    } else {
                         await new Promise(r => setTimeout(r, 200)); 
                         const res = await geocodeAddress(geocoder, cleanAddr, isActive);
                         const l = res.geometry.location;
@@ -592,7 +713,10 @@
                         localStorage.setItem(cacheKey, JSON.stringify({lat, lng}));
                         locs.push({ id: o.id, lat, lng });
                     }
-                } catch(e) { if(e === "CANCELLED") return; locs.push({ id: o.id, lat: null, lng: null }); }
+                } catch(e) { 
+                    if(e === "CANCELLED") return; 
+                    locs.push({ id: o.id, lat: null, lng: null }); 
+                }
             }
 
             if(!isActive()) return;
@@ -620,8 +744,10 @@
             if(!isActive()) return;
             sortedOrderIds = [...sortedIds, ...others];
             window.renderOrders();
+
             const overlay = document.getElementById('successOverlay');
-            overlay.classList.remove('error'); document.getElementById('overlayIcon').className = 'fa fa-check-circle fa-5x mb-3';
+            overlay.classList.remove('error'); 
+            document.getElementById('overlayIcon').className = 'fa fa-check-circle fa-5x mb-3';
             document.getElementById('successText').innerText = "Optimiert!";
             overlay.classList.add('show');
             setTimeout(() => { overlay.classList.remove('show'); }, 1500);
@@ -656,7 +782,19 @@
         uiSetBtn(true); uiSetLoader(true); uiSetText("Hole GPS...");
 
         if(optimizeTimeout) clearTimeout(optimizeTimeout);
-        optimizeTimeout = setTimeout(() => { if(isOptimizing && currentRunId === optimizeRunId) { isOptimizing = false; optimizeRunId++; resetOptimizeUI(); const overlay = document.getElementById('successOverlay'); overlay.classList.add('error'); document.getElementById('overlayIcon').className = 'fa fa-exclamation-triangle fa-5x mb-3'; document.getElementById('successText').innerText = "Zeitüberschreitung!"; overlay.classList.add('show'); setTimeout(() => { overlay.classList.remove('show'); overlay.classList.remove('error'); }, 2000); } }, 20000);
+        optimizeTimeout = setTimeout(() => { 
+            if(isOptimizing && currentRunId === optimizeRunId) { 
+                isOptimizing = false; 
+                optimizeRunId++; 
+                resetOptimizeUI(); 
+                const overlay = document.getElementById('successOverlay'); 
+                overlay.classList.add('error'); 
+                document.getElementById('overlayIcon').className = 'fa fa-exclamation-triangle fa-5x mb-3'; 
+                document.getElementById('successText').innerText = "Zeitüberschreitung!"; 
+                overlay.classList.add('show'); 
+                setTimeout(() => { overlay.classList.remove('show'); overlay.classList.remove('error'); }, 2000); 
+            } 
+        }, 20000);
 
         navigator.geolocation.getCurrentPosition(
             (pos) => { if(currentRunId !== optimizeRunId) return; performOptimization(pos.coords.latitude, pos.coords.longitude, myOrders, currentRunId); },
@@ -664,33 +802,140 @@
         );
     };
 
-    window.showInvoice = (id) => { const o = allOrders.find(x => x.id === id); if(o && o.invoiceImg) { document.getElementById('fullInvoiceImg').src = o.invoiceImg; new bootstrap.Modal(document.getElementById('invoiceModal')).show(); } };
-    window.showLoadingList = () => { const selectedDate = document.getElementById('mainDateFilter').value; const myOrders = allOrders.filter(o => o.deliveryDate === selectedDate && o.assignedDriver === currentUser.name && o.status !== 'Delivered' && o.status !== 'Returned'); const agg = {}; myOrders.forEach(o => { if(o.items) o.items.forEach(i => { const n = i.name.trim(); const qty = parseFloat(i.qty) || 0; const unit = i.qty.replace(/[0-9.]/g, '').trim(); if(!agg[n]) agg[n] = {count:0, unit:unit}; agg[n].count += qty; }); }); const listBody = document.getElementById('loadingListBody'); listBody.innerHTML = ''; if(Object.keys(agg).length === 0) listBody.innerHTML = '<li class="list-group-item text-center text-muted">Leer</li>'; Object.keys(agg).sort().forEach(k => { listBody.innerHTML += `<li class="list-group-item d-flex justify-content-between"><span>${k}</span><strong>${agg[k].count} ${agg[k].unit}</strong></li>`; }); new bootstrap.Modal(document.getElementById('loadingListModal')).show(); };
-    window.claimOrder = async (id) => { if(!currentUser) return alert("Bitte zuerst einloggen."); if(confirm("Auftrag übernehmen?")) { await updateDoc(doc(db, "orders", id), { assignedDriver: currentUser.name }); window.filterOrders('mine'); } };
-    window.openModal = (id) => { const o = allOrders.find(x => x.id === id); if(!o) return; currentOrderID = id; document.getElementById('modalCustName').innerText = o.customerName.split('|')[0]; document.getElementById('modalTotalInput').value = parseFloat(o.totalAmount).toFixed(2); document.getElementById('driverNote').value = o.deliveryNote || ''; const iList = document.getElementById('modalItems'); iList.innerHTML = ''; if(o.items) o.items.forEach(i => iList.innerHTML += `<div class="d-flex justify-content-between border-bottom py-1"><span>${i.qty} ${i.name}</span><span>${i.total.toFixed(2)}</span></div>`); toggleReturnView(false); new bootstrap.Modal(document.getElementById('deliveryModal')).show(); setTimeout(() => setupCanvas('sigPad', false), 500); };
-    window.toggleReturnView = (isReturn) => { document.getElementById('viewSuccess').classList.toggle('d-none', isReturn); document.getElementById('viewReturn').classList.toggle('d-none', !isReturn); document.getElementById('btnConfirm').classList.toggle('d-none', isReturn); document.getElementById('btnConfirmRet').classList.toggle('d-none', !isReturn); }
+    window.showInvoice = (id) => { 
+        const o = allOrders.find(x => x.id === id); 
+        if(o && o.invoiceImg) { 
+            document.getElementById('fullInvoiceImg').src = o.invoiceImg; 
+            new bootstrap.Modal(document.getElementById('invoiceModal')).show(); 
+        } 
+    };
+
+    window.showLoadingList = () => { 
+        const selectedDate = document.getElementById('mainDateFilter').value; 
+        const myOrders = allOrders.filter(o => o.deliveryDate === selectedDate && o.assignedDriver === currentUser.name && o.status !== 'Delivered' && o.status !== 'Returned'); 
+        const agg = {}; 
+        myOrders.forEach(o => { 
+            if(o.items) o.items.forEach(i => { 
+                const n = i.name.trim(); 
+                const qty = parseFloat(i.qty) || 0; 
+                const unit = i.qty.replace(/[0-9.]/g, '').trim(); 
+                if(!agg[n]) agg[n] = {count:0, unit:unit}; 
+                agg[n].count += qty; 
+            }); 
+        }); 
+        const listBody = document.getElementById('loadingListBody'); 
+        listBody.innerHTML = ''; 
+        if(Object.keys(agg).length === 0) listBody.innerHTML = '<li class="list-group-item text-center text-muted">Leer</li>'; 
+        Object.keys(agg).sort().forEach(k => { 
+            listBody.innerHTML += `<li class="list-group-item d-flex justify-content-between"><span>${k}</span><strong>${agg[k].count} ${agg[k].unit}</strong></li>`; 
+        }); 
+        new bootstrap.Modal(document.getElementById('loadingListModal')).show(); 
+    };
+
+    window.claimOrder = async (id) => { 
+        if(!currentUser) return alert("Bitte zuerst einloggen."); 
+        if(confirm("Auftrag übernehmen?")) { 
+            await updateDoc(doc(db, "orders", id), { assignedDriver: currentUser.name }); 
+            window.filterOrders('mine'); 
+        } 
+    };
+
+    // ✅ Delivery modal no longer sets up any canvas
+    window.openModal = (id) => { 
+        const o = allOrders.find(x => x.id === id); 
+        if(!o) return; 
+        currentOrderID = id; 
+        document.getElementById('modalCustName').innerText = o.customerName.split('|')[0]; 
+        document.getElementById('modalTotalInput').value = parseFloat(o.totalAmount).toFixed(2); 
+        document.getElementById('driverNote').value = o.deliveryNote || ''; 
+        const iList = document.getElementById('modalItems'); 
+        iList.innerHTML = ''; 
+        if(o.items) o.items.forEach(i => iList.innerHTML += `<div class="d-flex justify-content-between border-bottom py-1"><span>${i.qty} ${i.name}</span><span>${i.total.toFixed(2)}</span></div>`); 
+        toggleReturnView(false); 
+        new bootstrap.Modal(document.getElementById('deliveryModal')).show(); 
+    };
+
+    window.toggleReturnView = (isReturn) => { 
+        document.getElementById('viewSuccess').classList.toggle('d-none', isReturn); 
+        document.getElementById('viewReturn').classList.toggle('d-none', !isReturn); 
+        document.getElementById('btnConfirm').classList.toggle('d-none', isReturn); 
+        document.getElementById('btnConfirmRet').classList.toggle('d-none', !isReturn); 
+    };
     
+    // ✅ setupCanvas kept ONLY for report signature pad
     function setupCanvas(id, isReport) { 
         let cvs = document.getElementById(id);
         const newCvs = cvs.cloneNode(true);
         cvs.parentNode.replaceChild(newCvs, cvs);
         cvs = newCvs;
+
         const ctx = cvs.getContext('2d'); 
         const parent = cvs.parentElement;
-        cvs.width = parent.offsetWidth; cvs.height = parent.offsetHeight; 
-        ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.strokeStyle = "#000"; 
-        if(isReport) { reportCanvas = cvs; reportCtx = ctx; } else { sigCanvas = cvs; sigCtx = ctx; } 
+        cvs.width = parent.offsetWidth; 
+        cvs.height = parent.offsetHeight; 
+
+        ctx.lineWidth = 3; 
+        ctx.lineCap = "round"; 
+        ctx.strokeStyle = "#000"; 
+
+        if(isReport) { 
+            reportCanvas = cvs; 
+            reportCtx = ctx; 
+        }
+
         const start=(e)=>{e.preventDefault(); isDrawing=true; ctx.beginPath(); const p=getPos(e,cvs); ctx.moveTo(p.x,p.y);}; 
         const move=(e)=>{if(!isDrawing)return; e.preventDefault(); const p=getPos(e,cvs); ctx.lineTo(p.x,p.y); ctx.stroke();}; 
         const end=()=>isDrawing=false; 
-        ['touchstart','mousedown'].forEach(e=>cvs.addEventListener(e,start)); ['touchmove','mousemove'].forEach(e=>cvs.addEventListener(e,move)); ['touchend','mouseup'].forEach(e=>cvs.addEventListener(e,end)); 
+
+        ['touchstart','mousedown'].forEach(e=>cvs.addEventListener(e,start)); 
+        ['touchmove','mousemove'].forEach(e=>cvs.addEventListener(e,move)); 
+        ['touchend','mouseup'].forEach(e=>cvs.addEventListener(e,end)); 
     }
     
-    function getPos(e,c) { const r=c.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:t.clientX-r.left, y:t.clientY-r.top}; }
-    window.clearSig = (id) => { const c = document.getElementById(id); const ctx = c.getContext('2d'); ctx.clearRect(0, 0, c.width, c.height); };
-    window.finishOrder = async (status) => { if(!currentUser) return alert("Bitte zuerst einloggen."); let u = { status, deliveredBy: currentUser.name, deliveredAt: new Date().toISOString() }; if(status==='Delivered'){ u.paymentMethod = document.querySelector('input[name="payMethod"]:checked').value; u.finalAmount = parseFloat(document.getElementById('modalTotalInput').value)||0; u.deliveryNote = document.getElementById('driverNote').value; u.signature = sigCanvas.toDataURL(); } else { u.returnReason = document.getElementById('returnReason').value; } await updateDoc(doc(db, "orders", currentOrderID), u); bootstrap.Modal.getInstance(document.getElementById('deliveryModal')).hide(); };
-    window.toggleTheme = () => { document.body.classList.toggle('dark-mode'); localStorage.setItem('driverTheme', document.body.classList.contains('dark-mode') ? 'dark' : 'light'); document.getElementById('themeIcon').className = document.body.classList.contains('dark-mode') ? 'fa fa-sun' : 'fa fa-moon'; };
-    window.checkTheme = () => { if(localStorage.getItem('driverTheme')==='dark') { document.body.classList.add('dark-mode'); document.getElementById('themeIcon').className = 'fa fa-sun'; } };
+    function getPos(e,c) { 
+        const r=c.getBoundingClientRect(); 
+        const t=e.touches?e.touches[0]:e; 
+        return {x:t.clientX-r.left, y:t.clientY-r.top}; 
+    }
+
+    // Used by report clear button only (still valid)
+    window.clearSig = (id) => { 
+        const c = document.getElementById(id); 
+        const ctx = c.getContext('2d'); 
+        ctx.clearRect(0, 0, c.width, c.height); 
+    };
+
+    // ✅ finishOrder: removed signature saving for Delivered
+    window.finishOrder = async (status) => { 
+        if(!currentUser) return alert("Bitte zuerst einloggen."); 
+        let u = { 
+            status, 
+            deliveredBy: currentUser.name, 
+            deliveredAt: new Date().toISOString() 
+        }; 
+        if(status==='Delivered'){
+            u.paymentMethod = document.querySelector('input[name="payMethod"]:checked').value; 
+            u.finalAmount = parseFloat(document.getElementById('modalTotalInput').value)||0; 
+            u.deliveryNote = document.getElementById('driverNote').value; 
+            // signature removed intentionally
+        } else { 
+            u.returnReason = document.getElementById('returnReason').value; 
+        } 
+        await updateDoc(doc(db, "orders", currentOrderID), u); 
+        bootstrap.Modal.getInstance(document.getElementById('deliveryModal')).hide(); 
+    };
+
+    window.toggleTheme = () => { 
+        document.body.classList.toggle('dark-mode'); 
+        localStorage.setItem('driverTheme', document.body.classList.contains('dark-mode') ? 'dark' : 'light'); 
+        document.getElementById('themeIcon').className = document.body.classList.contains('dark-mode') ? 'fa fa-sun' : 'fa fa-moon'; 
+    };
+    window.checkTheme = () => { 
+        if(localStorage.getItem('driverTheme')==='dark') { 
+            document.body.classList.add('dark-mode'); 
+            document.getElementById('themeIcon').className = 'fa fa-sun'; 
+        } 
+    };
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_F92tTWrN5aUF6iCIkQv5s_4xwIkm81k&libraries=geometry" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
