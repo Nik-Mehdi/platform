@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sam Pack Admin V19.2 (Time Fix)</title>
+    <title>Sam Pack Admin V20.0 (Inventory Dashboard)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -11,23 +11,23 @@
     <style>
         :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f0f2f5; --sidebar-width: 260px; }
         body { background: var(--bg); font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding-bottom: 80px; overflow-x: hidden; }
-        
+
         /* --- DESKTOP STYLES --- */
         #admin-lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
         .pin-input { background: transparent; border: none; border-bottom: 2px solid rgba(255,255,255,0.3); color: white; font-size: 2rem; letter-spacing: 10px; text-align: center; width: 200px; margin-bottom: 20px; outline: none; }
         .login-btn { width: 60px; height: 60px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        
+
         .sidebar { width: var(--sidebar-width); height: 100vh; position: fixed; top: 0; left: 0; background: var(--primary); color: white; display: flex; flex-direction: column; z-index: 1050; transition: transform 0.3s ease-in-out; }
         .nav-btn { padding: 15px 20px; cursor: pointer; color: #adb5bd; display: flex; align-items: center; gap: 10px; transition: 0.2s; text-decoration: none; border-left: 4px solid transparent; font-weight: 500; }
         .nav-btn:hover, .nav-btn.active { background: rgba(255,255,255,0.1); color: white; border-left-color: var(--accent); }
         .history-box { margin-top: auto; padding: 20px; background: rgba(0,0,0,0.2); }
         .date-ctrl input { border: none; padding: 10px; width: 100%; outline: none; font-weight: bold; color: var(--primary); text-align: center; border-radius: 8px; }
-        
+
         .main-content { margin-left: var(--sidebar-width); padding: 30px; }
         .card-box { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); margin-bottom: 25px; border: none; }
         .status-badge { padding: 6px 14px; border-radius: 30px; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
         .st-packed { background: #e3f2fd; color: #0d47a1; } .st-delivered { background: #e8f5e9; color: #1b5e20; } .st-returned { background: #ffebee; color: #b71c1c; }
-        
+
         .mobile-header, .mobile-date-bar, .bottom-nav, .mobile-total-bar { display: none; } /* Hidden on Desktop */
 
         /* SEARCH BAR STYLES */
@@ -39,7 +39,7 @@
         /* --- MOBILE STYLES (FIXED LAYOUT) --- */
         @media (max-width: 768px) {
             .sidebar { display: none !important; } .sidebar-backdrop { display: none !important; }
-            
+
             /* Fixed Header & Date */
             .mobile-header { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 50px; background: white; z-index: 1040; align-items: center; justify-content: center; box-shadow: 0 1px 5px rgba(0,0,0,0.05); }
             .mobile-header h6 { color: var(--primary); font-weight: 900; letter-spacing: 1px; margin: 0; font-size: 1rem; }
@@ -48,25 +48,25 @@
 
             /* Main Content Padded for Fixed Bars */
             .main-content { margin-left: 0 !important; padding: 15px !important; padding-top: 115px !important; padding-bottom: 80px !important; }
-            
+
             /* Grid Actions */
             .dash-actions-mobile { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; justify-content: center; }
             .dash-actions-mobile .btn { flex: 1 1 auto; min-width: 45%; border-radius: 8px; font-size: 0.85rem; padding: 8px 5px; }
             .dash-header-mobile { display: block !important; }
-            #dashTitle { display: none; } 
+            #dashTitle { display: none; }
 
             /* Mobile Total Bar - Updated for Count */
             .mobile-total-bar { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; color: white; padding: 8px 15px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85rem; }
 
             /* Card Style Fixes */
-            #mainTable thead { display: none; } 
+            #mainTable thead { display: none; }
             #mainTable tbody tr { display: block; background: white; border-radius: 12px; margin-bottom: 15px; padding: 15px; border: 1px solid #f0f0f0; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
             #mainTable tbody td { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f8f9fa; }
             #mainTable tbody td:last-child { border-bottom: none; padding-top: 15px; justify-content: flex-end; gap: 5px; }
 
             /* Bottom Navigation */
             .bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; width: 100%; height: 65px; background: white; border-top: 1px solid #eee; z-index: 1050; justify-content: space-around; align-items: center; padding-bottom: 5px; box-shadow: 0 -5px 20px rgba(0,0,0,0.03); }
-            .b-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #95a5a6; font-size: 0.7rem; width: 25%; cursor: pointer; transition: 0.2s; }
+            .b-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #95a5a6; font-size: 0.7rem; width: 25%; cursor: pointer; transition: 0.2s; position: relative; }
             .b-nav-item i { font-size: 1.3rem; margin-bottom: 4px; }
             .b-nav-item.active { color: var(--primary); font-weight: bold; }
             .b-nav-item.active i { color: var(--accent); }
@@ -82,21 +82,111 @@
         .net-amount { font-size: 2rem; font-weight: bold; color: #2c3e50; }
         .inkasso-row { background-color: #f0fff4 !important; border-left: 4px solid #2ecc71; }
         @media print { body * { visibility: hidden; } #singleReportModal, #singleReportModal * { visibility: visible; } #singleReportModal { position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; padding: 0; background: white !important; } .modal-dialog { max-width: 100%; margin: 0; } .modal-content { border: none; box-shadow: none; } .modal-header, .modal-footer, .btn-close { display: none !important; } .invoice-box { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; } }
+
+        /* =========================
+           Inventory Header polish (ONLY inventory)
+           ========================= */
+        #view-inventory .inv-topbar {
+            position: sticky;
+            top: 10px;
+            z-index: 1040;
+        }
+
+        #view-inventory .inv-topbar-card{
+            background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.70));
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 16px;
+            box-shadow: 0 14px 35px rgba(0,0,0,0.06);
+            padding: 14px 14px 12px 14px;
+        }
+
+        #view-inventory .inv-title-pill{
+            display:inline-flex;
+            align-items:center;
+            gap:10px;
+            padding: 9px 14px;
+            border-radius: 12px;
+            color: #fff;
+            background: linear-gradient(180deg, #0d6efd, #0b5ed7);
+            box-shadow: 0 10px 20px rgba(13,110,253,0.25);
+            border: 1px solid rgba(255,255,255,0.18);
+            font-weight: 900;
+            letter-spacing: .2px;
+            user-select: none;
+        }
+        #view-inventory .inv-title-pill i{ opacity:.95; }
+
+        #view-inventory .badge-kpi{
+            border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: 0 10px 18px rgba(0,0,0,0.06);
+        }
+
+        /* Inventory table tweaks */
+        #invTable thead th { white-space: nowrap; }
+        #invTable td { vertical-align: middle; }
+        #invTable .inv-name-sub { font-size: 0.85rem; color: #6c757d; }
+
+        /* Mobile inventory cards (only in view-inventory) */
+        @media (max-width: 768px) {
+            #invTable thead { display:none; }
+            #invTable tbody tr {
+                display:block;
+                background:#fff;
+                border-radius: 12px;
+                margin-bottom: 12px;
+                padding: 14px;
+                border: 1px solid #f0f0f0;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            }
+            #invTable tbody td{
+                display:flex;
+                justify-content:space-between;
+                gap:12px;
+                padding: 6px 0;
+                border-bottom: 1px solid #f8f9fa;
+            }
+            #invTable tbody td:last-child{
+                border-bottom:none;
+                padding-top: 10px;
+                justify-content:flex-end;
+                gap: 8px;
+            }
+        }
     </style>
 </head>
 <body>
-<div id="admin-lock-screen"><div class="mb-4 text-center"><i class="fa fa-user-shield fa-4x mb-3 text-warning"></i><h3>ADMIN LOGIN</h3></div><input type="password" id="adminPinInput" class="pin-input" placeholder="PIN" inputmode="numeric"><button class="login-btn" onclick="checkAdminLogin()"><i class="fa fa-arrow-right"></i></button></div>
+<div id="admin-lock-screen">
+    <div class="mb-4 text-center">
+        <i class="fa fa-user-shield fa-4x mb-3 text-warning"></i>
+        <h3>ADMIN LOGIN</h3>
+    </div>
+    <input type="password" id="adminPinInput" class="pin-input" placeholder="PIN" inputmode="numeric">
+    <button class="login-btn" onclick="checkAdminLogin()"><i class="fa fa-arrow-right"></i></button>
+</div>
 
 <div class="mobile-header"><h6>SAM PACK ADMIN</h6></div>
 <div class="mobile-date-bar"><input type="date" id="mobileDateFilter" class="mobile-date-input" onchange="window.syncDate('mobile')"></div>
 
 <div class="sidebar" id="mainSidebar">
-    <div class="sidebar-header" style="padding: 30px 20px; text-align: center;"><h3 class="fw-bold m-0">SAM PACK</h3><small class="text-white-50">Admin V19.2</small></div>
+    <div class="sidebar-header" style="padding: 30px 20px; text-align: center;">
+        <h3 class="fw-bold m-0">SAM PACK</h3>
+        <small class="text-white-50">Admin V20.0</small>
+    </div>
+
     <div class="nav-btn active" onclick="switchView('dash')" id="d-dash"><i class="fa fa-chart-pie"></i> Dashboard</div>
     <div class="nav-btn" onclick="switchView('import')" id="d-import"><i class="fa fa-cloud-upload"></i> Import</div>
     <div class="nav-btn" onclick="switchView('team')" id="d-team"><i class="fa fa-users-gear"></i> Team</div>
     <div class="nav-btn" onclick="switchView('alerts')" id="d-alerts"><i class="fa fa-bell"></i> Meldungen <span class="badge rounded-pill bg-danger ms-auto" id="menuAlertBadge" style="display:none">0</span></div>
-    <div class="history-box"><label><i class="fa fa-calendar-alt"></i> ZEITREISE</label><div class="date-ctrl"><input type="date" id="globalDateFilter" onchange="window.syncDate('desktop')"></div><div class="text-center mt-2 small text-white-50" id="dateStatusText">Heute</div></div>
+
+    <!-- NEW: Inventory module button -->
+    <div class="nav-btn" onclick="switchView('inventory')" id="d-inventory"><i class="fa fa-boxes"></i> Lager (Bestand)</div>
+
+    <div class="history-box">
+        <label><i class="fa fa-calendar-alt"></i> ZEITREISE</label>
+        <div class="date-ctrl"><input type="date" id="globalDateFilter" onchange="window.syncDate('desktop')"></div>
+        <div class="text-center mt-2 small text-white-50" id="dateStatusText">Heute</div>
+    </div>
 </div>
 
 <div class="main-content">
@@ -110,23 +200,157 @@
                 <button class="btn btn-primary" onclick="window.showCashReport()"><i class="fa fa-wallet"></i> Kasse</button>
                 <button class="btn btn-warning" onclick="window.showSummary()"><i class="fa fa-list"></i> Liste</button>
             </div>
-            <div class="search-container"><i class="fa fa-search search-icon"></i><input type="text" id="globalSearch" class="search-input" placeholder="Suchen (Kunde, Fahrer...)" onkeyup="window.renderDash()"></div>
-            <div class="mobile-total-bar"><span id="mobileCountDisplay"><i class="fa fa-boxes"></i> 0 Aufträge</span><span class="fw-bold" id="mobileTotalDisplay">0.00 CHF</span></div>
+            <div class="search-container">
+                <i class="fa fa-search search-icon"></i>
+                <input type="text" id="globalSearch" class="search-input" placeholder="Suchen (Kunde, Fahrer...)" onkeyup="window.renderDash()">
+            </div>
+            <div class="mobile-total-bar">
+                <span id="mobileCountDisplay"><i class="fa fa-boxes"></i> 0 Aufträge</span>
+                <span class="fw-bold" id="mobileTotalDisplay">0.00 CHF</span>
+            </div>
         </div>
 
         <div class="card-box p-0 overflow-hidden">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0" id="mainTable">
-                    <thead class="table-light"><tr><th id="thKunde">Kunde / Details</th><th>Fahrer</th><th>Status</th><th>Total (<span id="desktopTotalDisplay">0.00</span>)</th><th class="text-end">Aktion</th></tr></thead>
+                    <thead class="table-light">
+                        <tr>
+                            <th id="thKunde">Kunde / Details</th>
+                            <th>Fahrer</th>
+                            <th>Status</th>
+                            <th>Total (<span id="desktopTotalDisplay">0.00</span>)</th>
+                            <th class="text-end">Aktion</th>
+                        </tr>
+                    </thead>
                     <tbody id="dashTable"></tbody>
                 </table>
             </div>
             <div id="emptyDash" class="text-center p-5 text-muted d-none"><i class="fa fa-folder-open fa-3x mb-3 opacity-25"></i><p>Keine Daten.</p></div>
         </div>
     </div>
-    <div id="view-alerts" class="d-none"><h4 class="fw-bold mb-4">Meldungen</h4><div id="alertsContainer"></div><div id="noAlerts" class="text-center text-muted mt-5 d-none"><i class="fa fa-check-circle fa-4x text-success mb-3 opacity-25"></i><h5>Alles in Ordnung</h5></div></div>
-    <div id="view-import" class="d-none"><h4 class="fw-bold mb-4">Import PDF</h4><div class="card-box text-center py-5" onclick="document.getElementById('pdfIn').click()" style="cursor:pointer; border: 2px dashed #ccc;"><i class="fa fa-file-pdf fa-3x text-danger mb-3"></i><h5>PDF hier klicken</h5><input type="file" id="pdfIn" hidden multiple accept="application/pdf"></div></div>
-    <div id="view-team" class="d-none"><h4 class="fw-bold mb-4">Team Management</h4><div class="row g-3"><div class="col-md-3"><div class="card-box border-top border-4 border-primary h-100"><h6 class="fw-bold text-primary mb-3">Fahrer</h6><div class="input-group mb-3"><input id="drvName" class="form-control" placeholder="Name"><input id="drvPin" class="form-control" placeholder="PIN" style="width:70px"><button onclick="addDrv()" class="btn btn-primary">+</button></div><ul id="drvList" class="list-group list-group-flush small"></ul></div></div><div class="col-md-3"><div class="card-box border-top border-4 border-warning h-100"><h6 class="fw-bold text-warning mb-3">Lager</h6><div class="input-group mb-3"><input id="lagName" class="form-control" placeholder="Name"><input id="lagPin" class="form-control" placeholder="PIN" style="width:70px"><button onclick="addLag()" class="btn btn-warning">+</button></div><ul id="lagList" class="list-group list-group-flush small"></ul></div></div><div class="col-md-3"><div class="card-box border-top border-4 border-success h-100"><h6 class="fw-bold text-success mb-3">Fahrzeuge</h6><div class="input-group mb-3"><input id="vehPlate" class="form-control" placeholder="Kennzeichen"><button onclick="addVeh()" class="btn btn-success">+</button></div><ul id="vehList" class="list-group list-group-flush small"></ul></div></div><div class="col-md-3 super-only"><div class="card-box border-top border-4 border-dark h-100 bg-light"><h6 class="fw-bold text-dark mb-3"><i class="fa fa-user-shield"></i> Administratoren</h6><div class="input-group mb-3"><input id="admName" class="form-control" placeholder="Name"><input id="admPin" class="form-control" placeholder="PIN" style="width:70px"><button onclick="addAdmin()" class="btn btn-dark">+</button></div><ul id="admList" class="list-group list-group-flush small"></ul></div></div></div></div>
+
+    <div id="view-alerts" class="d-none">
+        <h4 class="fw-bold mb-4">Meldungen</h4>
+        <div id="alertsContainer"></div>
+        <div id="noAlerts" class="text-center text-muted mt-5 d-none"><i class="fa fa-check-circle fa-4x text-success mb-3 opacity-25"></i><h5>Alles in Ordnung</h5></div>
+    </div>
+
+    <div id="view-import" class="d-none">
+        <h4 class="fw-bold mb-4">Import PDF</h4>
+        <div class="card-box text-center py-5" onclick="document.getElementById('pdfIn').click()" style="cursor:pointer; border: 2px dashed #ccc;">
+            <i class="fa fa-file-pdf fa-3x text-danger mb-3"></i>
+            <h5>PDF hier klicken</h5>
+            <input type="file" id="pdfIn" hidden multiple accept="application/pdf">
+        </div>
+    </div>
+
+    <div id="view-team" class="d-none">
+        <h4 class="fw-bold mb-4">Team Management</h4>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="card-box border-top border-4 border-primary h-100">
+                    <h6 class="fw-bold text-primary mb-3">Fahrer</h6>
+                    <div class="input-group mb-3">
+                        <input id="drvName" class="form-control" placeholder="Name">
+                        <input id="drvPin" class="form-control" placeholder="PIN" style="width:70px">
+                        <button onclick="addDrv()" class="btn btn-primary">+</button>
+                    </div>
+                    <ul id="drvList" class="list-group list-group-flush small"></ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-box border-top border-4 border-warning h-100">
+                    <h6 class="fw-bold text-warning mb-3">Lager</h6>
+                    <div class="input-group mb-3">
+                        <input id="lagName" class="form-control" placeholder="Name">
+                        <input id="lagPin" class="form-control" placeholder="PIN" style="width:70px">
+                        <button onclick="addLag()" class="btn btn-warning">+</button>
+                    </div>
+                    <ul id="lagList" class="list-group list-group-flush small"></ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-box border-top border-4 border-success h-100">
+                    <h6 class="fw-bold text-success mb-3">Fahrzeuge</h6>
+                    <div class="input-group mb-3">
+                        <input id="vehPlate" class="form-control" placeholder="Kennzeichen">
+                        <button onclick="addVeh()" class="btn btn-success">+</button>
+                    </div>
+                    <ul id="vehList" class="list-group list-group-flush small"></ul>
+                </div>
+            </div>
+            <div class="col-md-3 super-only">
+                <div class="card-box border-top border-4 border-dark h-100 bg-light">
+                    <h6 class="fw-bold text-dark mb-3"><i class="fa fa-user-shield"></i> Administratoren</h6>
+                    <div class="input-group mb-3">
+                        <input id="admName" class="form-control" placeholder="Name">
+                        <input id="admPin" class="form-control" placeholder="PIN" style="width:70px">
+                        <button onclick="addAdmin()" class="btn btn-dark">+</button>
+                    </div>
+                    <ul id="admList" class="list-group list-group-flush small"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW VIEW: Inventory -->
+    <div id="view-inventory" class="d-none">
+        <div class="inv-topbar inv-topbar-card mb-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="inv-title-pill"><i class="fa fa-boxes"></i> Lager (Bestand)</div>
+
+                    <span class="badge badge-kpi bg-dark-subtle text-dark rounded-pill px-3 py-2" id="kpiItems">
+                        <i class="fa fa-layer-group me-1"></i> <strong>0</strong> Items
+                    </span>
+                    <span class="badge badge-kpi bg-primary-subtle text-primary rounded-pill px-3 py-2" id="kpiValue">
+                        <i class="fa fa-coins me-1"></i> <strong>CHF 0.00</strong> Total Value
+                    </span>
+                    <span class="badge badge-kpi bg-warning-subtle text-warning-emphasis rounded-pill px-3 py-2" id="kpiLow">
+                        <i class="fa fa-triangle-exclamation me-1"></i> <strong>0</strong> Low Stock
+                    </span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary fw-bold" onclick="openInvModal()"><i class="fa fa-plus me-1"></i> Neuer Artikel</button>
+                    <button class="btn btn-dark fw-bold" onclick="openMovementModal()"><i class="fa fa-clock-rotate-left me-1"></i> Bewegung / Log</button>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <div class="search-container mb-0">
+                    <i class="fa fa-search search-icon"></i>
+                    <input type="text" id="invSearch" class="search-input" placeholder="Suchen (SKU, Name, Kategorie, Barcode, Location...)" onkeyup="renderInventory()">
+                </div>
+                <div class="small text-muted mt-2">
+                    Hinweis: Warnung wenn <b>Qty &lt; MinQty</b>, Rot wenn <b>Qty &lt; 0</b>.
+                </div>
+            </div>
+        </div>
+
+        <div class="card-box p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="invTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>SKU</th>
+                            <th>Name</th>
+                            <th>Preis</th>
+                            <th>Qty</th>
+                            <th>MinQty</th>
+                            <th>Value</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invBody"></tbody>
+                </table>
+            </div>
+            <div id="invEmpty" class="text-center p-5 text-muted d-none">
+                <i class="fa fa-box-open fa-3x mb-3 opacity-25"></i>
+                <p>Keine Artikel gefunden.</p>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="bottom-nav">
@@ -134,8 +358,12 @@
     <div class="b-nav-item" onclick="switchView('import')" id="mb-import"><i class="fa fa-cloud-upload"></i><span>Import</span></div>
     <div class="b-nav-item" onclick="switchView('team')" id="mb-team"><i class="fa fa-users-gear"></i><span>Team</span></div>
     <div class="b-nav-item position-relative" onclick="switchView('alerts')" id="mb-alerts"><i class="fa fa-bell"></i><span>Alerts</span><span id="mobileAlertBadge" class="b-badge" style="display:none">0</span></div>
+
+    <!-- NEW: Mobile bottom nav inventory -->
+    <div class="b-nav-item" onclick="switchView('inventory')" id="mb-inventory"><i class="fa fa-boxes"></i><span>Lager</span></div>
 </div>
 
+<!-- Existing Modals -->
 <div class="modal fade" id="manualModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-success text-white"><h5 class="modal-title">Neuer Auftrag</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="row g-2 mb-3"><div class="col-md-8"><input id="manCust" class="form-control" placeholder="Kundenname"></div><div class="col-md-4"><input id="manDate" type="date" class="form-control"></div></div><hr><h6>Artikel:</h6><div class="input-group mb-2"><input id="manQty" class="form-control" placeholder="Menge"><input id="manItem" class="form-control" placeholder="Artikelname"><input id="manPrice" class="form-control" placeholder="Preis" type="number" step="0.05"><button class="btn btn-outline-success" onclick="window.addManualItem()">+</button></div><ul id="manList" class="list-group mb-3"></ul><div class="text-end fw-bold">Total: <span id="manTotal">0.00</span> CHF</div></div><div class="modal-footer"><button class="btn btn-success w-100" onclick="window.saveManualOrder()">Speichern</button></div></div></div></div>
 
 <div class="modal fade" id="editModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-warning text-dark"><h5 class="modal-title"><i class="fa fa-pen"></i> Bearbeiten</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
@@ -155,40 +383,206 @@
 <div class="modal fade" id="reportListModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-dark text-white"><h5 class="modal-title" id="reportListTitle">Reports</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="d-flex justify-content-between align-items-center mb-3"><label class="fw-bold">Datum:</label><input type="date" id="reportDateFilter" class="form-control w-auto" onchange="window.filterReports()"></div><div class="list-group" id="reportListContainer"></div></div></div></div></div>
 <div class="modal fade" id="singleReportModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title">Vorschau</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-4 bg-light" id="singleReportBody"></div><div class="modal-footer"><button class="btn btn-primary w-100" onclick="window.print()"><i class="fa fa-print"></i> PDF / Drucken</button></div></div></div></div>
 
+<!-- NEW: Inventory Modals -->
+<div class="modal fade" id="invItemModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="invModalTitle"><i class="fa fa-boxes"></i> Artikel</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <label class="small text-muted">SKU (DocID)</label>
+                        <input id="invSku" class="form-control fw-bold" placeholder="z.B. 006">
+                        <div class="small text-muted mt-1">Tipp: kurz, eindeutig (z.B. 001, 006, 2023...)</div>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="small text-muted">Name</label>
+                        <input id="invName" class="form-control fw-bold" placeholder="Artikelname">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="small text-muted">Preis (CHF)</label>
+                        <input id="invPrice" type="number" step="0.05" class="form-control" placeholder="0.00">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="small text-muted">Qty</label>
+                        <input id="invQty" type="number" step="1" class="form-control" placeholder="0">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="small text-muted">MinQty</label>
+                        <input id="invMin" type="number" step="1" class="form-control" placeholder="0">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="small text-muted">Exp. Date</label>
+                        <input id="invExp" type="date" class="form-control">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="small text-muted">Kategorie</label>
+                        <input id="invCat" class="form-control" placeholder="z.B. Getränke">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small text-muted">Barcode</label>
+                        <input id="invBarcode" class="form-control" placeholder="EAN / QR value">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small text-muted">Location</label>
+                        <input id="invLoc" class="form-control" placeholder="z.B. burgdorf / Regal A">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="small text-muted">Notiz / Reason (optional)</label>
+                        <input id="invReason" class="form-control" placeholder="z.B. Korrektur / Neue Lieferung / Preis Update">
+                    </div>
+                </div>
+
+                <div class="alert alert-light border mt-3 small text-muted mb-0">
+                    <i class="fa fa-info-circle"></i>
+                    Änderungen werden gespeichert. Qty-Änderung erzeugt optional eine Bewegung (type: adjust), wenn Reason angegeben ist.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                <button class="btn btn-primary fw-bold" onclick="saveInvItem()"><i class="fa fa-save me-1"></i> Speichern</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="movementModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="fa fa-clock-rotate-left"></i> Bewegung / Log (letzte 500)</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <div class="small text-muted">Quelle: <b>inventory_movements</b></div>
+                    <div class="d-flex gap-2">
+                        <input id="movSearch" class="form-control" style="min-width:260px" placeholder="Suchen (SKU, Name, by, type...)" onkeyup="renderMovements()">
+                        <button class="btn btn-outline-dark" onclick="exportMovementsCsv()"><i class="fa fa-file-csv me-1"></i> Export CSV</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>At</th><th>Type</th><th>SKU</th><th>Name</th>
+                            <th class="text-end">QtyΔ</th><th class="text-end">Price</th><th class="text-end">ValueΔ</th>
+                            <th>By</th><th>Reason</th>
+                        </tr>
+                        </thead>
+                        <tbody id="movBody"></tbody>
+                    </table>
+                </div>
+                <div id="movEmpty" class="text-center text-muted py-4 d-none">
+                    <i class="fa fa-clipboard-list fa-3x mb-2 opacity-25"></i>
+                    <div>Keine Bewegungen.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, deleteDoc, onSnapshot, query, orderBy, where, writeBatch, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import {
+        getFirestore, collection, addDoc, doc, deleteDoc, onSnapshot, query, orderBy, where,
+        writeBatch, updateDoc, getDocs, setDoc, limit
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
     const db = getFirestore(initializeApp({ apiKey: "AIzaSyCY9TmJwzoJRWFTAjhDFBD0eFMR4YKTHJQ", projectId: "listapp-96713" }));
-    let currentUserRole=''; (async()=>{const s=await getDocs(collection(db,"admin_users")); if(s.empty) await addDoc(collection(db,"admin_users"),{name:"Super Admin",pin:"9999",role:"super_admin"});})();
-    window.checkAdminLogin=async()=>{const p=document.getElementById('adminPinInput').value; if(!p)return; const q=query(collection(db,"admin_users"),where("pin","==",p)); const s=await getDocs(q); if(!s.empty){const u=s.docs[0].data(); currentUserRole=u.role; document.getElementById('admin-lock-screen').style.display='none'; if(currentUserRole==='super_admin')document.querySelectorAll('.super-only').forEach(e=>e.style.display='block');}else{alert("Falscher PIN!");}};
-    let gOrders=[], gDrivers=[], allReports=[], currentReportType='driver', manualItems=[], editingItems=[], editingId=null; let selectedDate=new Date().toISOString().split('T')[0]; 
-    document.getElementById('globalDateFilter').value=selectedDate; document.getElementById('mobileDateFilter').value=selectedDate;
+
+    let currentUserRole = '';
+    let currentAdminName = 'Admin';
+
+    (async () => {
+        const s = await getDocs(collection(db,"admin_users"));
+        if(s.empty) await addDoc(collection(db,"admin_users"),{name:"Super Admin",pin:"9999",role:"super_admin"});
+    })();
+
+    window.checkAdminLogin = async () => {
+        const p = document.getElementById('adminPinInput').value;
+        if(!p) return;
+        const q = query(collection(db,"admin_users"), where("pin","==",p));
+        const s = await getDocs(q);
+        if(!s.empty){
+            const u = s.docs[0].data();
+            currentUserRole = u.role;
+            currentAdminName = u.name || 'Admin';
+            document.getElementById('admin-lock-screen').style.display='none';
+            if(currentUserRole==='super_admin') document.querySelectorAll('.super-only').forEach(e=>e.style.display='block');
+        } else {
+            alert("Falscher PIN!");
+        }
+    };
+
+    let gOrders=[], gDrivers=[], allReports=[], currentReportType='driver', manualItems=[], editingItems=[], editingId=null;
+    let selectedDate=new Date().toISOString().split('T')[0];
+    document.getElementById('globalDateFilter').value=selectedDate;
+    document.getElementById('mobileDateFilter').value=selectedDate;
 
     window.syncDate = (src) => {
         if(src === 'mobile') selectedDate = document.getElementById('mobileDateFilter').value;
         else selectedDate = document.getElementById('globalDateFilter').value;
-        document.getElementById('globalDateFilter').value = selectedDate; document.getElementById('mobileDateFilter').value = selectedDate;
-        document.getElementById('dateStatusText').innerText=(selectedDate===new Date().toISOString().split('T')[0])?"Heute":selectedDate; 
+        document.getElementById('globalDateFilter').value = selectedDate;
+        document.getElementById('mobileDateFilter').value = selectedDate;
+        document.getElementById('dateStatusText').innerText=(selectedDate===new Date().toISOString().split('T')[0])?"Heute":selectedDate;
         window.renderDash();
     };
+
     window.switchView=(id)=>{
-        document.querySelectorAll('[id^="view-"]').forEach(e=>e.classList.add('d-none')); document.getElementById('view-'+id).classList.remove('d-none'); 
-        document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active')); const dBtn = document.getElementById('d-'+id); if(dBtn) dBtn.classList.add('active');
-        document.querySelectorAll('.b-nav-item').forEach(e=>e.classList.remove('active')); const mBtn = document.getElementById('mb-'+id); if(mBtn) mBtn.classList.add('active');
-        if(id==='dash')window.renderDash();
+        document.querySelectorAll('[id^="view-"]').forEach(e=>e.classList.add('d-none'));
+        document.getElementById('view-'+id).classList.remove('d-none');
+
+        document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active'));
+        const dBtn = document.getElementById('d-'+id); if(dBtn) dBtn.classList.add('active');
+
+        document.querySelectorAll('.b-nav-item').forEach(e=>e.classList.remove('active'));
+        const mBtn = document.getElementById('mb-'+id); if(mBtn) mBtn.classList.add('active');
+
+        if(id==='dash') window.renderDash();
+        if(id==='inventory') renderInventory();
     };
 
-    onSnapshot(query(collection(db,"alerts"),orderBy("createdAt","desc")),s=>{const c=document.getElementById('alertsContainer'); c.innerHTML=''; let i=0; s.forEach(d=>{i++; const a=d.data(); c.innerHTML+=`<div class="alert-item" style="background:white;padding:15px;border-left:5px solid #f1c40f;margin-bottom:10px;display:flex;justify-content:space-between;"><div><strong>${a.item}</strong>: ${a.msg}<br><small>${a.from} | ${new Date(a.createdAt).toLocaleString()}</small></div><button class="btn btn-sm btn-outline-danger" onclick="window.delDoc('alerts','${d.id}')">OK</button></div>`;}); const b=document.getElementById('menuAlertBadge'); const mb=document.getElementById('mobileAlertBadge'); if(i>0){ b.innerText=i; b.style.display='inline-block'; mb.innerText=i; mb.style.display='block'; document.getElementById('noAlerts').classList.add('d-none'); } else{ b.style.display='none'; mb.style.display='none'; document.getElementById('noAlerts').classList.remove('d-none'); }});
+    onSnapshot(query(collection(db,"alerts"),orderBy("createdAt","desc")),s=>{
+        const c=document.getElementById('alertsContainer'); c.innerHTML='';
+        let i=0;
+        s.forEach(d=>{
+            i++;
+            const a=d.data();
+            c.innerHTML+=`<div class="alert-item" style="background:white;padding:15px;border-left:5px solid #f1c40f;margin-bottom:10px;display:flex;justify-content:space-between;">
+                <div><strong>${a.item}</strong>: ${a.msg}<br><small>${a.from} | ${new Date(a.createdAt).toLocaleString()}</small></div>
+                <button class="btn btn-sm btn-outline-danger" onclick="window.delDoc('alerts','${d.id}')">OK</button>
+            </div>`;
+        });
+        const b=document.getElementById('menuAlertBadge'); const mb=document.getElementById('mobileAlertBadge');
+        if(i>0){ b.innerText=i; b.style.display='inline-block'; mb.innerText=i; mb.style.display='block'; document.getElementById('noAlerts').classList.add('d-none'); }
+        else { b.style.display='none'; mb.style.display='none'; document.getElementById('noAlerts').classList.remove('d-none'); }
+    });
+
     onSnapshot(query(collection(db,"orders"),orderBy("createdAt","desc")),s=>{gOrders=[];s.forEach(d=>gOrders.push({id:d.id,...d.data()}));window.renderDash();});
     onSnapshot(query(collection(db,"driver_daily_reports"),orderBy("date","desc")), s=>{allReports=[]; s.forEach(d=>allReports.push({id:d.id,...d.data()}));});
-    onSnapshot(collection(db,"drivers"),s=>{gDrivers=[];const l=document.getElementById('drvList');l.innerHTML='';s.forEach(d=>{gDrivers.push({id:d.id,...d.data()});l.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${d.data().name} <span class="text-danger" style="cursor:pointer" onclick="window.delDoc('drivers','${d.id}')">×</span></li>`;});window.renderDash();});
+    onSnapshot(collection(db,"drivers"),s=>{
+        gDrivers=[];
+        const l=document.getElementById('drvList'); l.innerHTML='';
+        s.forEach(d=>{
+            gDrivers.push({id:d.id,...d.data()});
+            l.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${d.data().name} <span class="text-danger" style="cursor:pointer" onclick="window.delDoc('drivers','${d.id}')">×</span></li>`;
+        });
+        window.renderDash();
+    });
     onSnapshot(collection(db,"warehouse_users"),s=>{const l=document.getElementById('lagList');l.innerHTML='';s.forEach(d=>l.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${d.data().name} <span class="text-danger" style="cursor:pointer" onclick="window.delDoc('warehouse_users','${d.id}')">×</span></li>`);});
     onSnapshot(collection(db,"vehicles"),s=>{const l=document.getElementById('vehList');l.innerHTML='';s.forEach(d=>l.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${d.data().plate} <span class="text-danger" style="cursor:pointer" onclick="window.delDoc('vehicles','${d.id}')">×</span></li>`);});
     onSnapshot(collection(db,"admin_users"),s=>{const l=document.getElementById('admList');l.innerHTML='';s.forEach(d=>l.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${d.data().name} <span class="text-danger" style="cursor:pointer" onclick="window.delDoc('admin_users','${d.id}')">×</span></li>`);});
-    
+
     window.renderDash=()=>{
-        const tb=document.getElementById('dashTable'); tb.innerHTML=''; 
-        let doVs=`<option value="">-- Frei --</option>`; gDrivers.forEach(d=>doVs+=`<option value="${d.name}">${d.name}</option>`); 
+        const tb=document.getElementById('dashTable'); tb.innerHTML='';
+        let doVs=`<option value="">-- Frei --</option>`; gDrivers.forEach(d=>doVs+=`<option value="${d.name}">${d.name}</option>`);
         const search = document.getElementById('globalSearch').value.toLowerCase();
         let fo = gOrders.filter(o=>o.deliveryDate===selectedDate);
         if(search.length > 0) fo = fo.filter(o => (o.customerName||'').toLowerCase().includes(search) || (o.assignedDriver||'').toLowerCase().includes(search) || (o.totalAmount||'').toString().includes(search));
@@ -197,17 +591,30 @@
         document.getElementById('mobileTotalDisplay').innerText = currentTotal.toFixed(2) + " CHF";
         document.getElementById('mobileCountDisplay').innerHTML = `<i class="fa fa-boxes"></i> ${fo.length} Aufträge`;
         document.getElementById('thKunde').innerHTML = `Kunde / Details <span class="badge bg-secondary rounded-pill small ms-1">${fo.length}</span>`;
-        if(fo.length===0)document.getElementById('emptyDash').classList.remove('d-none'); else document.getElementById('emptyDash').classList.add('d-none'); 
+        if(fo.length===0)document.getElementById('emptyDash').classList.remove('d-none'); else document.getElementById('emptyDash').classList.add('d-none');
         fo.forEach(o=>{
             let stT='Offen',stC=''; let priceFlag = '';
             if(o.status === 'Delivered' && o.finalAmount) { const diff = Math.abs(parseFloat(o.finalAmount) - parseFloat(o.totalAmount || 0)); if(diff > 0.05) priceFlag = '<span class="badge bg-warning text-dark ms-1"><i class="fa fa-pen"></i></span>'; }
-            if(o.status==='Packed') stT=`<span class="status-badge st-packed">Gepackt</span>`; else if(o.status==='Returned'){stT=`<span class="status-badge st-returned">Retour</span>`;stC='bg-danger bg-opacity-10';} else if(o.status==='Delivered'){stT=`<span class="status-badge st-delivered">${o.paymentMethod||'Geliefert'}</span>${priceFlag}`;stC='bg-success bg-opacity-10';} 
-            let rdo=doVs.replace(`value="${o.assignedDriver||""}"`,`value="${o.assignedDriver||""}" selected`); 
-            let eye=o.invoiceImg?`<button class="btn btn-sm btn-primary" onclick="window.showImg('${o.id}')"><i class="fa fa-eye"></i></button>`:''; 
-            tb.innerHTML+=`<tr class="${stC}"><td><div class="small">${o.deliveryDate}</div><strong>${o.customerName.split('|')[0]}</strong><br><small>${o.items?.length||0} Pos.</small></td><td><select class="form-select form-select-sm" onchange="window.assignDriver('${o.id}',this.value)" ${o.status==='Delivered'?'disabled':''}>${rdo}</select></td><td>${stT}</td><td>${parseFloat(o.finalAmount||o.totalAmount||0).toFixed(2)}</td><td class="text-end"><button class="btn btn-sm btn-info" onclick="window.showItems('${o.id}')"><i class="fa fa-list"></i></button> ${eye} <button class="btn btn-sm btn-warning" onclick="window.openEdit('${o.id}')"><i class="fa fa-pen"></i></button> <button class="btn btn-sm btn-danger" onclick="window.delDoc('orders','${o.id}')"><i class="fa fa-trash"></i></button></td></tr>`;
+            if(o.status==='Packed') stT=`<span class="status-badge st-packed">Gepackt</span>`;
+            else if(o.status==='Returned'){stT=`<span class="status-badge st-returned">Retour</span>`;stC='bg-danger bg-opacity-10';}
+            else if(o.status==='Delivered'){stT=`<span class="status-badge st-delivered">${o.paymentMethod||'Geliefert'}</span>${priceFlag}`;stC='bg-success bg-opacity-10';}
+            let rdo=doVs.replace(`value="${o.assignedDriver||""}"`,`value="${o.assignedDriver||""}" selected`);
+            let eye=o.invoiceImg?`<button class="btn btn-sm btn-primary" onclick="window.showImg('${o.id}')"><i class="fa fa-eye"></i></button>`:'';
+            tb.innerHTML+=`<tr class="${stC}">
+                <td><div class="small">${o.deliveryDate}</div><strong>${o.customerName.split('|')[0]}</strong><br><small>${o.items?.length||0} Pos.</small></td>
+                <td><select class="form-select form-select-sm" onchange="window.assignDriver('${o.id}',this.value)" ${o.status==='Delivered'?'disabled':''}>${rdo}</select></td>
+                <td>${stT}</td>
+                <td>${parseFloat(o.finalAmount||o.totalAmount||0).toFixed(2)}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-info" onclick="window.showItems('${o.id}')"><i class="fa fa-list"></i></button>
+                    ${eye}
+                    <button class="btn btn-sm btn-warning" onclick="window.openEdit('${o.id}')"><i class="fa fa-pen"></i></button>
+                    <button class="btn btn-sm btn-danger" onclick="window.delDoc('orders','${o.id}')"><i class="fa fa-trash"></i></button>
+                </td>
+            </tr>`;
         });
     };
-    
+
     // EDIT LOGIC
     window.openEdit=(id)=>{
         const o = gOrders.find(x=>x.id===id); if(!o)return;
@@ -249,59 +656,555 @@
         bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
     };
 
-    window.assignDriver=async(id,n)=>await updateDoc(doc(db,"orders",id),{assignedDriver:n}); window.delDoc=async(c,id)=>{if(confirm("Löschen?"))deleteDoc(doc(db,c,id));};
-    window.addDrv=async()=>{const n=document.getElementById('drvName').value,p=document.getElementById('drvPin').value;if(n&&p)await addDoc(collection(db,"drivers"),{name:n,pin:p});}; window.addLag=async()=>{const n=document.getElementById('lagName').value,p=document.getElementById('lagPin').value;if(n&&p)await addDoc(collection(db,"warehouse_users"),{name:n,pin:p});}; window.addVeh=async()=>{const p=document.getElementById('vehPlate').value;if(p)await addDoc(collection(db,"vehicles"),{plate:p});}; window.addAdmin=async()=>{const n=document.getElementById('admName').value,p=document.getElementById('admPin').value;if(n&&p)await addDoc(collection(db,"admin_users"),{name:n,pin:p,role:'staff'});};
-    window.newManualOrder=()=>{manualItems=[]; document.getElementById('manCust').value=''; document.getElementById('manDate').valueAsDate=new Date(); renderManualItems(); new bootstrap.Modal(document.getElementById('manualModal')).show();}; window.addManualItem=()=>{const q=document.getElementById('manQty').value,n=document.getElementById('manItem').value,p=parseFloat(document.getElementById('manPrice').value)||0;if(q&&n){manualItems.push({qty:q,name:n,price:p,total:p});renderManualItems();}}; function renderManualItems(){const l=document.getElementById('manList');l.innerHTML='';let t=0;manualItems.forEach((i,x)=>{t+=i.price;l.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${i.qty} ${i.name} <span>${i.price.toFixed(2)}</span> <span class="text-danger" onclick="manualItems.splice(${x},1);renderManualItems()">×</span></li>`;});document.getElementById('manTotal').innerText=t.toFixed(2);} window.saveManualOrder=async()=>{const c=document.getElementById('manCust').value,d=document.getElementById('manDate').value,t=parseFloat(document.getElementById('manTotal').innerText);if(c&&manualItems.length>0){await addDoc(collection(db,"orders"),{customerName:c,deliveryDate:d,items:manualItems,totalAmount:t,status:'Open',createdAt:new Date().toISOString()});bootstrap.Modal.getInstance(document.getElementById('manualModal')).hide();}};
-    window.showItems=(id)=>{const o=gOrders.find(x=>x.id===id);if(!o)return;document.getElementById('itemTitle').innerText=o.customerName.split('|')[0];let h=`<table class="table table-striped mb-3"><tbody class="small">`;o.items.forEach(i=>h+=`<tr><td>${i.qty}</td><td>${i.name}</td><td class="text-end">${i.price||0}</td></tr>`);h+=`</tbody></table>`;if(o.deliveryNote)h+=`<div class="bg-light p-2 mb-2 border"><strong>Note:</strong> ${o.deliveryNote}</div>`;if(o.missingItems)h+=`<div class="bg-warning p-2 mb-2 border"><strong>Fehlmengen:</strong> ${o.missingItems.map(m=>m.qty+' '+m.name).join(', ')}</div>`;document.getElementById('itemBodyContainer').innerHTML=h;new bootstrap.Modal(document.getElementById('itemsModal')).show();}; window.showImg=(id)=>{const o=gOrders.find(x=>x.id===id);if(o&&o.invoiceImg){document.getElementById('imgContent').src=o.invoiceImg;new bootstrap.Modal(document.getElementById('invoiceModal')).show();}};
-    window.openReportList=async(t)=>{currentReportType=t; document.getElementById('reportListTitle').innerText=(t==='driver'?'Fahrer':'Lager')+' Reports'; document.getElementById('reportDateFilter').value=selectedDate; const c=(t==='driver')?"driver_daily_reports":"daily_reports"; const s=await getDocs(query(collection(db,c),orderBy("date","desc"))); allReports=[]; s.forEach(d=>allReports.push({id:d.id,...d.data()})); window.filterReports(); new bootstrap.Modal(document.getElementById('reportListModal')).show();};
-    window.filterReports=()=>{const f=document.getElementById('reportDateFilter').value; const l=document.getElementById('reportListContainer'); l.innerHTML=''; const fl=allReports.filter(r=>r.date.startsWith(f)); if(fl.length===0){l.innerHTML='<div class="text-center p-4 text-muted">Keine Reports.</div>';return;} fl.forEach(r=>{
-        // FIX: Display submittedAt if available, else date
-        const timeDisplay = r.submittedAt ? new Date(r.submittedAt).toLocaleTimeString() : new Date(r.date).toLocaleTimeString();
-        let tt=currentReportType==='driver'?`${r.driver} (${r.vehicle})`:`${r.by} (Lager)`; 
-        l.innerHTML+=`<div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"><div><div class="fw-bold">${tt}</div><div class="small text-muted">${timeDisplay}</div></div><div class="d-flex gap-2"><button class="btn btn-sm btn-primary" onclick="window.viewSingleReport('${r.id}')"><i class="fa fa-eye"></i></button><button class="btn btn-sm btn-outline-danger" onclick="window.delReport('${r.id}')"><i class="fa fa-trash"></i></button></div></div>`;
-    });};
-    window.delReport=async(id)=>{if(confirm("Löschen?")){const c=(currentReportType==='driver')?"driver_daily_reports":"daily_reports"; await deleteDoc(doc(db,c,id)); allReports=allReports.filter(r=>r.id!==id); window.filterReports();}};
-    
-    // --- UPDATED REPORT VIEWER TO FIX INKASSO LIST ---
+    window.assignDriver=async(id,n)=>await updateDoc(doc(db,"orders",id),{assignedDriver:n});
+    window.delDoc=async(c,id)=>{if(confirm("Löschen?"))deleteDoc(doc(db,c,id));};
+    window.addDrv=async()=>{const n=document.getElementById('drvName').value,p=document.getElementById('drvPin').value;if(n&&p)await addDoc(collection(db,"drivers"),{name:n,pin:p});};
+    window.addLag=async()=>{const n=document.getElementById('lagName').value,p=document.getElementById('lagPin').value;if(n&&p)await addDoc(collection(db,"warehouse_users"),{name:n,pin:p});};
+    window.addVeh=async()=>{const p=document.getElementById('vehPlate').value;if(p)await addDoc(collection(db,"vehicles"),{plate:p});};
+    window.addAdmin=async()=>{const n=document.getElementById('admName').value,p=document.getElementById('admPin').value;if(n&&p)await addDoc(collection(db,"admin_users"),{name:n,pin:p,role:'staff'});};
+
+    window.newManualOrder=()=>{
+        manualItems=[];
+        document.getElementById('manCust').value='';
+        document.getElementById('manDate').valueAsDate=new Date();
+        renderManualItems();
+        new bootstrap.Modal(document.getElementById('manualModal')).show();
+    };
+    window.addManualItem=()=>{
+        const q=document.getElementById('manQty').value,n=document.getElementById('manItem').value,p=parseFloat(document.getElementById('manPrice').value)||0;
+        if(q&&n){manualItems.push({qty:q,name:n,price:p,total:p});renderManualItems();}
+    };
+    function renderManualItems(){
+        const l=document.getElementById('manList');l.innerHTML='';
+        let t=0;
+        manualItems.forEach((i,x)=>{
+            t+=i.price;
+            l.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${i.qty} ${i.name} <span>${i.price.toFixed(2)}</span> <span class="text-danger" onclick="manualItems.splice(${x},1);renderManualItems()">×</span></li>`;
+        });
+        document.getElementById('manTotal').innerText=t.toFixed(2);
+    }
+    window.saveManualOrder=async()=>{
+        const c=document.getElementById('manCust').value,d=document.getElementById('manDate').value,t=parseFloat(document.getElementById('manTotal').innerText);
+        if(c&&manualItems.length>0){
+            await addDoc(collection(db,"orders"),{customerName:c,deliveryDate:d,items:manualItems,totalAmount:t,status:'Open',createdAt:new Date().toISOString()});
+            bootstrap.Modal.getInstance(document.getElementById('manualModal')).hide();
+        }
+    };
+
+    window.showItems=(id)=>{
+        const o=gOrders.find(x=>x.id===id);if(!o)return;
+        document.getElementById('itemTitle').innerText=o.customerName.split('|')[0];
+        let h=`<table class="table table-striped mb-3"><tbody class="small">`;
+        o.items.forEach(i=>h+=`<tr><td>${i.qty}</td><td>${i.name}</td><td class="text-end">${i.price||0}</td></tr>`);
+        h+=`</tbody></table>`;
+        if(o.deliveryNote)h+=`<div class="bg-light p-2 mb-2 border"><strong>Note:</strong> ${o.deliveryNote}</div>`;
+        if(o.missingItems)h+=`<div class="bg-warning p-2 mb-2 border"><strong>Fehlmengen:</strong> ${o.missingItems.map(m=>m.qty+' '+m.name).join(', ')}</div>`;
+        document.getElementById('itemBodyContainer').innerHTML=h;
+        new bootstrap.Modal(document.getElementById('itemsModal')).show();
+    };
+    window.showImg=(id)=>{
+        const o=gOrders.find(x=>x.id===id);
+        if(o&&o.invoiceImg){document.getElementById('imgContent').src=o.invoiceImg;new bootstrap.Modal(document.getElementById('invoiceModal')).show();}
+    };
+
+    window.openReportList=async(t)=>{
+        currentReportType=t;
+        document.getElementById('reportListTitle').innerText=(t==='driver'?'Fahrer':'Lager')+' Reports';
+        document.getElementById('reportDateFilter').value=selectedDate;
+        const c=(t==='driver')?"driver_daily_reports":"daily_reports";
+        const s=await getDocs(query(collection(db,c),orderBy("date","desc")));
+        allReports=[]; s.forEach(d=>allReports.push({id:d.id,...d.data()}));
+        window.filterReports();
+        new bootstrap.Modal(document.getElementById('reportListModal')).show();
+    };
+
+    window.filterReports=()=>{
+        const f=document.getElementById('reportDateFilter').value;
+        const l=document.getElementById('reportListContainer'); l.innerHTML='';
+        const fl=allReports.filter(r=>r.date.startsWith(f));
+        if(fl.length===0){l.innerHTML='<div class="text-center p-4 text-muted">Keine Reports.</div>';return;}
+        fl.forEach(r=>{
+            const timeDisplay = r.submittedAt ? new Date(r.submittedAt).toLocaleTimeString() : new Date(r.date).toLocaleTimeString();
+            let tt=currentReportType==='driver'?`${r.driver} (${r.vehicle})`:`${r.by} (Lager)`;
+            l.innerHTML+=`<div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <div><div class="fw-bold">${tt}</div><div class="small text-muted">${timeDisplay}</div></div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-primary" onclick="window.viewSingleReport('${r.id}')"><i class="fa fa-eye"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="window.delReport('${r.id}')"><i class="fa fa-trash"></i></button>
+                </div>
+            </div>`;
+        });
+    };
+
+    window.delReport=async(id)=>{
+        if(confirm("Löschen?")){
+            const c=(currentReportType==='driver')?"driver_daily_reports":"daily_reports";
+            await deleteDoc(doc(db,c,id));
+            allReports=allReports.filter(r=>r.id!==id);
+            window.filterReports();
+        }
+    };
+
     window.viewSingleReport=(id)=>{
-        const r=allReports.find(x=>x.id===id); if(!r)return; 
-        
-        // FIX: Use submittedAt for accurate time display in PDF
+        const r=allReports.find(x=>x.id===id); if(!r)return;
+
         const displayDate = r.submittedAt ? new Date(r.submittedAt).toLocaleDateString() : new Date(r.date).toLocaleDateString();
         const displayTime = r.submittedAt ? new Date(r.submittedAt).toLocaleTimeString() : new Date(r.date).toLocaleTimeString();
 
-        let h=''; 
+        let h='';
         if(currentReportType==='driver'){
-            let rw=''; 
-            if(r.details) r.details.forEach(d=>rw+=`<tr><td>${d.name}</td><td>${d.amount.toFixed(2)}</td></tr>`); 
-            
-            let inkassoHtml = ''; 
-            // FIX: Check ALL possible array sources for invoices
+            let rw='';
+            if(r.details) r.details.forEach(d=>rw+=`<tr><td>${d.name}</td><td>${d.amount.toFixed(2)}</td></tr>`);
+
+            let inkassoHtml = '';
             const inkassoList = r.extraInvoices || r.inkassoItems || r.openInvoices || (Array.isArray(r.inkasso) ? r.inkasso : []);
             const inkassoVal = r.totalInkasso || r.inkassoTotal || (typeof r.inkasso === 'number' ? r.inkasso : 0);
 
-            if (inkassoList && inkassoList.length > 0) { 
-                inkassoHtml += `<tr class="inkasso-row"><td colspan="2"><strong><i class="fa fa-plus-circle"></i> Inkasso / Alte Rechnungen</strong></td></tr>`; 
-                inkassoList.forEach(i => { 
-                    // Handle 'amt' vs 'amount' vs 'value'
+            if (inkassoList && inkassoList.length > 0) {
+                inkassoHtml += `<tr class="inkasso-row"><td colspan="2"><strong><i class="fa fa-plus-circle"></i> Inkasso / Alte Rechnungen</strong></td></tr>`;
+                inkassoList.forEach(i => {
                     const val = parseFloat(i.amount || i.amt || i.value || 0);
-                    inkassoHtml += `<tr style="background:#f0fff4; color:#146c43;"><td><small>[${i.nr||i.invoiceNo||'-'}]</small> ${i.name||i.companyName||i.company}</td><td>+ ${val.toFixed(2)}</td></tr>`; 
-                }); 
-            } 
-            
-            const grandTotalCash = r.totalCash + inkassoVal; 
-            
-            h=`<div class="invoice-box"><div class="invoice-header-bar d-flex justify-content-between align-items-center"><div><h2 class="invoice-title fw-bold">SAM PACK</h2><div class="text-muted small">Logistics & Delivery</div></div><div class="text-end"><div class="fw-bold text-dark">TAGESBERICHT</div><div>${displayDate}</div><div class="small text-muted">${displayTime}</div></div></div><div class="mb-4 d-flex justify-content-between"><div><strong>Fahrer:</strong><br>${r.driver}</div><div class="text-end"><strong>Fahrzeug:</strong><br>${r.vehicle||'-'}</div></div><table class="table table-sm"><thead><tr style="border-bottom: 2px solid #333;"><th>Beschreibung</th><th class="text-end">Betrag (CHF)</th></tr></thead><tbody>${rw}${inkassoHtml}</tbody></table><div class="row mt-4"><div class="col-6"><div class="p-3 bg-light rounded small"><strong>Ausgaben:</strong><br>Tanken: -${r.expFuel || 0}<br>Sonstiges: -${r.expOther || 0}<br><em>${r.expNote || ''}</em></div><div class="mt-3 text-center"><img src="${r.signature}" style="height:60px; opacity:0.7;"><div style="border-top:1px solid #ccc; width:100px; margin:5px auto 0;">Unterschrift</div></div></div><div class="col-6"><div class="invoice-total-box"><div class="d-flex justify-content-between mb-2"><span>Total Bar (Verkauf):</span><strong>${r.totalCash.toFixed(2)}</strong></div><div class="d-flex justify-content-between mb-2 text-success"><span>Total Inkasso:</span><strong>${inkassoVal.toFixed(2)}</strong></div><hr><div class="d-flex justify-content-between mb-2"><span>Zwischentotal:</span><strong>${grandTotalCash.toFixed(2)}</strong></div><div class="d-flex justify-content-between text-danger small"><span>Abzug (Ausgaben):</span><span>- ${(parseFloat(r.expFuel||0) + parseFloat(r.expOther||0)).toFixed(2)}</span></div><hr><div class="d-flex justify-content-between align-items-center"><span class="fw-bold text-dark">NETTO (Abgabe)</span><span class="net-amount">${r.netHandover}</span></div></div></div></div></div>`;
+                    inkassoHtml += `<tr style="background:#f0fff4; color:#146c43;"><td><small>[${i.nr||i.invoiceNo||'-'}]</small> ${i.name||i.companyName||i.company}</td><td>+ ${val.toFixed(2)}</td></tr>`;
+                });
+            }
+
+            const grandTotalCash = r.totalCash + inkassoVal;
+
+            h=`<div class="invoice-box">
+                <div class="invoice-header-bar d-flex justify-content-between align-items-center">
+                    <div><h2 class="invoice-title fw-bold">SAM PACK</h2><div class="text-muted small">Logistics & Delivery</div></div>
+                    <div class="text-end"><div class="fw-bold text-dark">TAGESBERICHT</div><div>${displayDate}</div><div class="small text-muted">${displayTime}</div></div>
+                </div>
+                <div class="mb-4 d-flex justify-content-between">
+                    <div><strong>Fahrer:</strong><br>${r.driver}</div>
+                    <div class="text-end"><strong>Fahrzeug:</strong><br>${r.vehicle||'-'}</div>
+                </div>
+                <table class="table table-sm">
+                    <thead><tr style="border-bottom: 2px solid #333;"><th>Beschreibung</th><th class="text-end">Betrag (CHF)</th></tr></thead>
+                    <tbody>${rw}${inkassoHtml}</tbody>
+                </table>
+                <div class="row mt-4">
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded small"><strong>Ausgaben:</strong><br>Tanken: -${r.expFuel || 0}<br>Sonstiges: -${r.expOther || 0}<br><em>${r.expNote || ''}</em></div>
+                        <div class="mt-3 text-center"><img src="${r.signature}" style="height:60px; opacity:0.7;"><div style="border-top:1px solid #ccc; width:100px; margin:5px auto 0;">Unterschrift</div></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="invoice-total-box">
+                            <div class="d-flex justify-content-between mb-2"><span>Total Bar (Verkauf):</span><strong>${r.totalCash.toFixed(2)}</strong></div>
+                            <div class="d-flex justify-content-between mb-2 text-success"><span>Total Inkasso:</span><strong>${inkassoVal.toFixed(2)}</strong></div>
+                            <hr>
+                            <div class="d-flex justify-content-between mb-2"><span>Zwischentotal:</span><strong>${grandTotalCash.toFixed(2)}</strong></div>
+                            <div class="d-flex justify-content-between text-danger small"><span>Abzug (Ausgaben):</span><span>- ${(parseFloat(r.expFuel||0) + parseFloat(r.expOther||0)).toFixed(2)}</span></div>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center"><span class="fw-bold text-dark">NETTO (Abgabe)</span><span class="net-amount">${r.netHandover}</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
         } else {
             h=`<div class="invoice-box"><h3>LAGER PROTOKOLL</h3><div>Mitarbeiter: <strong>${r.by}</strong> | ${new Date(r.date).toLocaleString()}</div><div class="mt-3 border p-3">${r.summary}</div><img src="${r.signature}" style="height:80px;margin-top:20px;"></div>`;
-        } 
-        document.getElementById('singleReportBody').innerHTML=h; new bootstrap.Modal(document.getElementById('singleReportModal')).show();
+        }
+        document.getElementById('singleReportBody').innerHTML=h;
+        new bootstrap.Modal(document.getElementById('singleReportModal')).show();
     };
 
-    window.showCashReport=()=>{let c=0, k=0; const dc={}; gOrders.forEach(o=>{if(o.deliveryDate===selectedDate && o.status==='Delivered'){const a=parseFloat(o.finalAmount||o.totalAmount); if(o.paymentMethod==='Bar'){c+=a; const d=o.deliveredBy||"Unbekannt"; dc[d]=(dc[d]||0)+a;} else if(o.paymentMethod==='Card') k+=a;}}); const dayReports = allReports.filter(r => r.date.startsWith(selectedDate)); dayReports.forEach(r => { let inkVal = r.totalInkasso || r.inkassoTotal || (typeof r.inkasso === 'number' ? r.inkasso : 0); if (inkVal > 0) { const driverName = r.driver; c += inkVal; dc[driverName] = (dc[driverName]||0) + inkVal; } }); const ul=document.getElementById('cashDetails'); ul.innerHTML=''; Object.keys(dc).forEach(d=>{ul.innerHTML+=`<li class="list-group-item d-flex justify-content-between"><span>${d}</span><strong>${dc[d].toFixed(2)}</strong></li>`;}); document.getElementById('cashTotalVal').innerText=`Total Bar: ${c.toFixed(2)}`; document.getElementById('cardTotalVal').innerText=`Total Karte: ${k.toFixed(2)}`; new bootstrap.Modal(document.getElementById('cashModal')).show();};
-    window.showSummary=()=>{const t={}; gOrders.forEach(o=>{if(o.deliveryDate===selectedDate&&o.status!=='Delivered'&&o.status!=='Returned'&&o.items){o.items.forEach(i=>{const n=i.name.trim(); const v=parseFloat(i.qty.toString().replace(/,/g,'.'))||0; const u=i.qty.replace(/[0-9.]/g,'').trim(); if(!t[n])t[n]={c:0,u:u}; t[n].c+=v;});}}); document.getElementById('summaryBody').innerHTML=Object.keys(t).sort().map(k=>`<tr><td><b>${parseFloat(t[k].c.toFixed(2))} ${t[k].u}</b></td><td>${k}</td></tr>`).join(''); new bootstrap.Modal(document.getElementById('summaryModal')).show();};
-    const pdfIn=document.getElementById('pdfIn'); if(pdfIn)pdfIn.addEventListener('change',async e=>{const batch=writeBatch(db); let c=0; for(let f of e.target.files){try{const b=await f.arrayBuffer(),pdf=await pdfjsLib.getDocument(b).promise,p=await pdf.getPage(1); let txt=(await p.getTextContent()).items.map(i=>i.str).join('|'); txt=txt.replace(/(\d+['’]?\d+\.\d{2})(Total|MwSt|Betrag|Rechnung|CHF)/gi,'$1 | $2'); const cvs=document.createElement('canvas'),ctx=cvs.getContext('2d'),vp=p.getViewport({scale:1.5}); cvs.width=vp.width;cvs.height=vp.height; await p.render({canvasContext:ctx,viewport:vp}).promise; const items=[]; const tokens=txt.split('|').map(t=>t.trim()).filter(t=>t.length>0); const isMoney=s=>/^[0-9'’]+\.\d{2}$/.test(s); for(let i=0;i<tokens.length-1;i++){let cc=tokens[i].replace(/['’]/g,''),cn=tokens[i+1].replace(/['’]/g,''); if(isMoney(cc)&&isMoney(cn)){const pr=parseFloat(cc),to=parseFloat(cn); if(i>=2){let qt=tokens[i-1],nm=tokens[i-2]; if(nm.match(/^[1-9]\d{0,1}\s/))nm=nm.replace(/^[1-9]\d{0,1}\s/,''); if(nm.length>2&&!nm.includes("Total")&&!nm.includes("MwSt")){items.push({name:nm,qty:qt,price:pr,total:to});}}}} const tot=txt.match(/Betrag inkl\. MWST.*?([\d'’\.]+\d{2})/); const dat=txt.match(/Datum:.*?(\d{2}\.\d{2}\.\d{4})/); let dISO=new Date().toISOString().split('T')[0]; if(dat){const[d,m,y]=dat[1].split('.');dISO=`${y}-${m}-${d}`;} if(items.length>0){batch.set(doc(collection(db,"orders")),{customerName:tokens[0].split('|')[0],deliveryDate:dISO,items:items,totalAmount:tot?parseFloat(tot[1].replace(/['’]/g,'')):0,status:'Open',createdAt:new Date().toISOString(),invoiceImg:cvs.toDataURL('image/jpeg',0.8)}); c++;}}catch(x){console.error(x);}} if(c>0){await batch.commit();window.renderDash();alert(c+" importiert!");}});
+    window.showCashReport=()=>{
+        let c=0, k=0; const dc={};
+        gOrders.forEach(o=>{
+            if(o.deliveryDate===selectedDate && o.status==='Delivered'){
+                const a=parseFloat(o.finalAmount||o.totalAmount);
+                if(o.paymentMethod==='Bar'){ c+=a; const d=o.deliveredBy||"Unbekannt"; dc[d]=(dc[d]||0)+a; }
+                else if(o.paymentMethod==='Card') k+=a;
+            }
+        });
+        const dayReports = allReports.filter(r => r.date.startsWith(selectedDate));
+        dayReports.forEach(r => {
+            let inkVal = r.totalInkasso || r.inkassoTotal || (typeof r.inkasso === 'number' ? r.inkasso : 0);
+            if (inkVal > 0) { const driverName = r.driver; c += inkVal; dc[driverName] = (dc[driverName]||0) + inkVal; }
+        });
+        const ul=document.getElementById('cashDetails'); ul.innerHTML='';
+        Object.keys(dc).forEach(d=>{ul.innerHTML+=`<li class="list-group-item d-flex justify-content-between"><span>${d}</span><strong>${dc[d].toFixed(2)}</strong></li>`;});
+        document.getElementById('cashTotalVal').innerText=`Total Bar: ${c.toFixed(2)}`;
+        document.getElementById('cardTotalVal').innerText=`Total Karte: ${k.toFixed(2)}`;
+        new bootstrap.Modal(document.getElementById('cashModal')).show();
+    };
+
+    window.showSummary=()=>{
+        const t={};
+        gOrders.forEach(o=>{
+            if(o.deliveryDate===selectedDate&&o.status!=='Delivered'&&o.status!=='Returned'&&o.items){
+                o.items.forEach(i=>{
+                    const n=i.name.trim();
+                    const v=parseFloat(i.qty.toString().replace(/,/g,'.'))||0;
+                    const u=i.qty.replace(/[0-9.]/g,'').trim();
+                    if(!t[n])t[n]={c:0,u:u};
+                    t[n].c+=v;
+                });
+            }
+        });
+        document.getElementById('summaryBody').innerHTML=Object.keys(t).sort().map(k=>`<tr><td><b>${parseFloat(t[k].c.toFixed(2))} ${t[k].u}</b></td><td>${k}</td></tr>`).join('');
+        new bootstrap.Modal(document.getElementById('summaryModal')).show();
+    };
+
+    /* =========================
+       PDF IMPORT (UNCHANGED)
+       ========================= */
+    const pdfIn=document.getElementById('pdfIn');
+    if(pdfIn)pdfIn.addEventListener('change',async e=>{
+        const batch=writeBatch(db);
+        let c=0;
+        for(let f of e.target.files){
+            try{
+                const b=await f.arrayBuffer(),pdf=await pdfjsLib.getDocument(b).promise,p=await pdf.getPage(1);
+                let txt=(await p.getTextContent()).items.map(i=>i.str).join('|');
+                txt=txt.replace(/(\d+['’]?\d+\.\d{2})(Total|MwSt|Betrag|Rechnung|CHF)/gi,'$1 | $2');
+                const cvs=document.createElement('canvas'),ctx=cvs.getContext('2d'),vp=p.getViewport({scale:1.5});
+                cvs.width=vp.width;cvs.height=vp.height;
+                await p.render({canvasContext:ctx,viewport:vp}).promise;
+
+                const items=[];
+                const tokens=txt.split('|').map(t=>t.trim()).filter(t=>t.length>0);
+                const isMoney=s=>/^[0-9'’]+\.\d{2}$/.test(s);
+                for(let i=0;i<tokens.length-1;i++){
+                    let cc=tokens[i].replace(/['’]/g,''),cn=tokens[i+1].replace(/['’]/g,'');
+                    if(isMoney(cc)&&isMoney(cn)){
+                        const pr=parseFloat(cc),to=parseFloat(cn);
+                        if(i>=2){
+                            let qt=tokens[i-1],nm=tokens[i-2];
+                            if(nm.match(/^[1-9]\d{0,1}\s/))nm=nm.replace(/^[1-9]\d{0,1}\s/,'');
+                            if(nm.length>2&&!nm.includes("Total")&&!nm.includes("MwSt")){
+                                items.push({name:nm,qty:qt,price:pr,total:to});
+                            }
+                        }
+                    }
+                }
+                const tot=txt.match(/Betrag inkl\. MWST.*?([\d'’\.]+\d{2})/);
+                const dat=txt.match(/Datum:.*?(\d{2}\.\d{2}\.\d{4})/);
+                let dISO=new Date().toISOString().split('T')[0];
+                if(dat){const[d,m,y]=dat[1].split('.');dISO=`${y}-${m}-${d}`;}
+                if(items.length>0){
+                    batch.set(doc(collection(db,"orders")),{
+                        customerName:tokens[0].split('|')[0],
+                        deliveryDate:dISO,
+                        items:items,
+                        totalAmount:tot?parseFloat(tot[1].replace(/['’]/g,'')):0,
+                        status:'Open',
+                        createdAt:new Date().toISOString(),
+                        invoiceImg:cvs.toDataURL('image/jpeg',0.8)
+                    });
+                    c++;
+                }
+            }catch(x){console.error(x);}
+        }
+        if(c>0){await batch.commit();window.renderDash();alert(c+" importiert!");}
+    });
+
+    /* =========================
+       NEW: Inventory Dashboard (ADD ONLY)
+       ========================= */
+    let gInventory = [];
+    let gMovements = [];
+    let invEditingSku = null;
+
+    // Live inventory
+    onSnapshot(collection(db, "inventory"), (s) => {
+        gInventory = [];
+        s.forEach(d => gInventory.push({ sku: d.id, ...d.data() }));
+        // keep snappy: if currently in inventory view, rerender
+        const invView = document.getElementById('view-inventory');
+        if(invView && !invView.classList.contains('d-none')) renderInventory();
+    });
+
+    // Live movements (last 500)
+    onSnapshot(query(collection(db, "inventory_movements"), orderBy("at","desc"), limit(500)), (s) => {
+        gMovements = [];
+        s.forEach(d => gMovements.push({ id: d.id, ...d.data() }));
+        const movModalEl = document.getElementById('movementModal');
+        const isOpen = movModalEl && movModalEl.classList.contains('show');
+        if(isOpen) renderMovements();
+    });
+
+    function moneyCHF(v){
+        const n = Number(v || 0);
+        return "CHF " + n.toFixed(2);
+    }
+
+    window.renderInventory = () => {
+        const body = document.getElementById('invBody');
+        const empty = document.getElementById('invEmpty');
+        if(!body) return;
+        body.innerHTML = '';
+
+        const q = (document.getElementById('invSearch')?.value || '').trim().toLowerCase();
+
+        const rows = gInventory
+            .map(x => ({
+                sku: x.sku,
+                name: x.name || '',
+                price: Number(x.price || 0),
+                qty: Number(x.qty || 0),
+                minQty: Number(x.minQty || 0),
+                expDate: x.expDate || '',
+                category: x.category || '',
+                barcode: x.barcode || '',
+                location: x.location || ''
+            }))
+            .filter(x => {
+                if(!q) return true;
+                const hay = `${x.sku} ${x.name} ${x.category} ${x.barcode} ${x.location}`.toLowerCase();
+                return hay.includes(q);
+            })
+            .sort((a,b) => (a.sku||'').localeCompare(b.sku||'', undefined, {numeric:true, sensitivity:'base'}));
+
+        // KPIs
+        let totalValue = 0;
+        let lowCount = 0;
+        rows.forEach(r => {
+            totalValue += (r.qty * r.price);
+            if(r.qty < r.minQty) lowCount++;
+        });
+
+        const kpiItems = document.getElementById('kpiItems');
+        const kpiValue = document.getElementById('kpiValue');
+        const kpiLow = document.getElementById('kpiLow');
+        if(kpiItems) kpiItems.innerHTML = `<i class="fa fa-layer-group me-1"></i> <strong>${rows.length}</strong> Items`;
+        if(kpiValue) kpiValue.innerHTML = `<i class="fa fa-coins me-1"></i> <strong>${moneyCHF(totalValue)}</strong> Total Value`;
+        if(kpiLow) kpiLow.innerHTML = `<i class="fa fa-triangle-exclamation me-1"></i> <strong>${lowCount}</strong> Low Stock`;
+
+        if(rows.length === 0){
+            empty.classList.remove('d-none');
+            return;
+        }
+        empty.classList.add('d-none');
+
+        rows.forEach(r => {
+            const val = r.qty * r.price;
+            let rowClass = '';
+            if(r.qty < 0) rowClass = 'table-danger';
+            else if(r.qty < r.minQty) rowClass = 'table-warning';
+
+            body.innerHTML += `
+            <tr class="${rowClass}">
+                <td><span class="fw-bold">${r.sku}</span></td>
+                <td>
+                    <div class="fw-bold">${r.name || '-'}</div>
+                    <div class="inv-name-sub">${[r.category, r.location].filter(Boolean).join(' · ')}</div>
+                </td>
+                <td>${moneyCHF(r.price)}</td>
+                <td class="fw-bold">${r.qty}</td>
+                <td>${r.minQty}</td>
+                <td class="fw-bold">${moneyCHF(val)}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-warning" onclick="openInvModal('${r.sku}')"><i class="fa fa-pen"></i></button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteInvItem('${r.sku}')"><i class="fa fa-trash"></i></button>
+                </td>
+            </tr>`;
+        });
+    };
+
+    window.openInvModal = (sku = null) => {
+        invEditingSku = sku;
+        document.getElementById('invReason').value = '';
+
+        if(!sku){
+            document.getElementById('invModalTitle').innerHTML = `<i class="fa fa-plus"></i> Neuer Artikel`;
+            document.getElementById('invSku').disabled = false;
+            document.getElementById('invSku').value = '';
+            document.getElementById('invName').value = '';
+            document.getElementById('invPrice').value = '';
+            document.getElementById('invQty').value = '';
+            document.getElementById('invMin').value = '';
+            document.getElementById('invExp').value = '';
+            document.getElementById('invCat').value = '';
+            document.getElementById('invBarcode').value = '';
+            document.getElementById('invLoc').value = '';
+        } else {
+            const it = gInventory.find(x => x.sku === sku);
+            if(!it) return;
+
+            document.getElementById('invModalTitle').innerHTML = `<i class="fa fa-pen"></i> Artikel bearbeiten`;
+            document.getElementById('invSku').disabled = true;
+            document.getElementById('invSku').value = sku;
+            document.getElementById('invName').value = it.name || '';
+            document.getElementById('invPrice').value = Number(it.price || 0);
+            document.getElementById('invQty').value = Number(it.qty || 0);
+            document.getElementById('invMin').value = Number(it.minQty || 0);
+            document.getElementById('invExp').value = it.expDate || '';
+            document.getElementById('invCat').value = it.category || '';
+            document.getElementById('invBarcode').value = it.barcode || '';
+            document.getElementById('invLoc').value = it.location || '';
+        }
+
+        new bootstrap.Modal(document.getElementById('invItemModal')).show();
+    };
+
+    window.saveInvItem = async () => {
+        const sku = (document.getElementById('invSku').value || '').trim();
+        const name = (document.getElementById('invName').value || '').trim();
+        const price = Number(document.getElementById('invPrice').value || 0);
+        const qty = Number(document.getElementById('invQty').value || 0);
+        const minQty = Number(document.getElementById('invMin').value || 0);
+        const expDate = document.getElementById('invExp').value || '';
+        const category = (document.getElementById('invCat').value || '').trim();
+        const barcode = (document.getElementById('invBarcode').value || '').trim();
+        const location = (document.getElementById('invLoc').value || '').trim();
+        const reason = (document.getElementById('invReason').value || '').trim();
+
+        if(!sku){ alert("SKU fehlt!"); return; }
+        if(!name){ alert("Name fehlt!"); return; }
+
+        const isEdit = !!invEditingSku;
+        const prev = isEdit ? (gInventory.find(x => x.sku === invEditingSku) || null) : null;
+        const prevQty = prev ? Number(prev.qty || 0) : 0;
+        const prevPrice = prev ? Number(prev.price || 0) : 0;
+
+        // Save inventory (docId = sku)
+        await setDoc(doc(db, "inventory", sku), {
+            name, price, qty, minQty,
+            expDate, category, barcode, location,
+            updatedAt: new Date().toISOString()
+        }, { merge: true });
+
+        // Optional movement for admin adjustments (if reason given OR qty changed)
+        if(isEdit){
+            const qtyDelta = qty - prevQty;
+            const priceChanged = Math.abs(price - prevPrice) > 0.00001;
+            if(qtyDelta !== 0 || (reason && reason.length > 0) || priceChanged){
+                await addDoc(collection(db,"inventory_movements"), {
+                    type: "adjust",
+                    sku,
+                    name,
+                    qtyDelta,
+                    price,
+                    valueDelta: qtyDelta * price,
+                    by: currentAdminName,
+                    at: new Date().toISOString(),
+                    reason: reason || (priceChanged ? "price update" : "manual adjust")
+                });
+            }
+        } else {
+            // On create, log a "adjust" if initial qty != 0
+            if(qty !== 0){
+                await addDoc(collection(db,"inventory_movements"), {
+                    type: "adjust",
+                    sku,
+                    name,
+                    qtyDelta: qty,
+                    price,
+                    valueDelta: qty * price,
+                    by: currentAdminName,
+                    at: new Date().toISOString(),
+                    reason: reason || "initial stock"
+                });
+            }
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById('invItemModal')).hide();
+    };
+
+    window.deleteInvItem = async (sku) => {
+        if(!confirm("Artikel löschen? (SKU: "+sku+")")) return;
+        await deleteDoc(doc(db, "inventory", sku));
+        // optional movement log for delete
+        await addDoc(collection(db,"inventory_movements"), {
+            type: "adjust",
+            sku,
+            name: "(deleted)",
+            qtyDelta: 0,
+            price: 0,
+            valueDelta: 0,
+            by: currentAdminName,
+            at: new Date().toISOString(),
+            reason: "deleted in admin"
+        });
+    };
+
+    window.openMovementModal = () => {
+        renderMovements();
+        new bootstrap.Modal(document.getElementById('movementModal')).show();
+    };
+
+    window.renderMovements = () => {
+        const body = document.getElementById('movBody');
+        const empty = document.getElementById('movEmpty');
+        if(!body) return;
+        body.innerHTML = '';
+
+        const q = (document.getElementById('movSearch')?.value || '').trim().toLowerCase();
+
+        const rows = gMovements.filter(m => {
+            if(!q) return true;
+            const hay = `${m.type||''} ${m.sku||''} ${m.name||''} ${m.by||''} ${m.reason||''}`.toLowerCase();
+            return hay.includes(q);
+        });
+
+        if(rows.length === 0){
+            empty.classList.remove('d-none');
+            return;
+        }
+        empty.classList.add('d-none');
+
+        rows.forEach(m => {
+            const at = m.at ? new Date(m.at).toLocaleString() : '-';
+            const qtyD = Number(m.qtyDelta || 0);
+            const price = Number(m.price || 0);
+            const valD = Number(m.valueDelta || 0);
+            const type = (m.type || '-');
+            const badge = type === 'sale' ? 'bg-primary' :
+                          type === 'return' ? 'bg-success' :
+                          type === 'waste' ? 'bg-danger' :
+                          'bg-secondary';
+
+            body.innerHTML += `
+            <tr>
+                <td>${at}</td>
+                <td><span class="badge ${badge}">${type}</span></td>
+                <td class="fw-bold">${m.sku || '-'}</td>
+                <td>${m.name || '-'}</td>
+                <td class="text-end ${qtyD<0?'text-danger':'text-success'} fw-bold">${qtyD}</td>
+                <td class="text-end">${moneyCHF(price)}</td>
+                <td class="text-end ${valD<0?'text-danger':'text-success'}">${moneyCHF(valD)}</td>
+                <td>${m.by || '-'}</td>
+                <td class="text-muted">${m.reason || ''}</td>
+            </tr>`;
+        });
+    };
+
+    window.exportMovementsCsv = () => {
+        const rows = gMovements.slice();
+        const header = ["at","type","sku","name","qtyDelta","price","valueDelta","by","reason"];
+        const lines = [header.join(",")];
+
+        rows.forEach(m => {
+            const line = [
+                (m.at||''),
+                (m.type||''),
+                (m.sku||''),
+                (m.name||''),
+                (m.qtyDelta ?? ''),
+                (m.price ?? ''),
+                (m.valueDelta ?? ''),
+                (m.by||''),
+                (m.reason||'')
+            ].map(v => {
+                const s = String(v).replace(/"/g,'""');
+                return `"${s}"`;
+            }).join(",");
+            lines.push(line);
+        });
+
+        const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8;"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `inventory_movements_${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    };
 </script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
