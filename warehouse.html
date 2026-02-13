@@ -1,394 +1,1817 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sam Pack Lager V10.0 (Fortress Edition)</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root { --primary: #34495e; --accent: #f1c40f; --bg: #f8f9fa; }
-        body { background: var(--bg); font-family: 'Segoe UI', sans-serif; -webkit-user-select: none; user-select: none; height: 100vh; overflow: hidden; }
-        
-        /* DESKTOP VIEW */
-        .app-container { max-width: 1000px; margin: 0 auto; height: 100vh; background: #fff; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; display: flex; flex-direction: column; }
-        @media (min-width: 992px) { .orders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; } }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Sam Pack Lager V21.1 (Smart Inventory + Bewegung, No DarkMode)</title>
 
-        /* LOGIN */
-        #login-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--primary); color: white; position: fixed; top: 0; left: 0; width: 100%; z-index: 2000; }
-        .pin-display { font-size: 2.5rem; letter-spacing: 15px; text-align: center; margin-bottom: 30px; background: transparent; border: none; border-bottom: 2px solid rgba(255,255,255,0.3); color: white; width: 220px; outline: none; }
-        #numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 300px; }
-        .pin-btn { width: 75px; height: 75px; border-radius: 50%; font-size: 1.8rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; }
-        .pin-btn:active { background: var(--accent); transform: scale(0.9); color: var(--primary); }
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
-        /* MAIN UI */
-        .header-bar { background: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; flex-shrink: 0; }
-        .ctrl-bar { background: #f8f9fa; padding: 10px; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
-        .driver-scroll { overflow-x: auto; white-space: nowrap; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
-        .filter-pill { display: inline-block; padding: 8px 16px; background: white; border: 1px solid #ddd; border-radius: 20px; margin-right: 8px; font-size: 0.9rem; cursor: pointer; color: #555; transition: 0.2s; }
-        .filter-pill.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: bold; }
+  <style>
+    :root{
+      --primary:#34495e;
+      --accent:#f1c40f;
+      --bg:#f8f9fa;
 
-        /* SCROLLABLE AREA (FIXED OVERLAP ISSUE) */
-        .scroll-content { flex-grow: 1; overflow-y: auto; padding: 15px; padding-bottom: 90px; /* <--- FIX: Space for bottom button */ }
+      --blue:#1e88e5;
+      --green:#19a974;
+      --danger:#e74c3c;
 
-        .order-card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border-left: 5px solid #ccc; cursor: pointer; transition: 0.2s; border: 1px solid #eee; margin-bottom: 10px; }
-        .order-card.packed { border-left-color: #27ae60; background: #f0fff4; }
-        
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .item-actions { display: flex; gap: 10px; }
-        .btn-check-item { width: 40px; height: 40px; border-radius: 8px; border: 1px solid #ddd; background: white; color: #ccc; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
-        
-        .item-row.ok .btn-check-item.ok { background: #27ae60; color: white; border-color: #27ae60; }
-        .item-row.ok .item-name { text-decoration: line-through; color: #aaa; }
-        .item-row.missing .btn-check-item.missing { background: #e67e22; color: white; border-color: #e67e22; }
-        .item-row.missing .item-name { color: #e74c3c; font-weight: bold; }
+      --bottom-nav-h: 72px;
+      --shadow-lg: 0 18px 40px rgba(0,0,0,.10);
+      --shadow-md: 0 10px 22px rgba(0,0,0,.10);
+      --shadow-sm: 0 6px 14px rgba(0,0,0,.10);
+      --ring: 0 0 0 .2rem rgba(30,136,229,.12);
 
-        .bottom-action { position: absolute; bottom: 0; left: 0; width: 100%; background: white; padding: 15px; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); display: flex; justify-content: center; z-index: 99; }
-        
-        canvas { border: 2px dashed #95a5a6; border-radius: 12px; width: 100%; background: #fff; touch-action: none; }
-        
-        /* SCROLLABLE LISTS IN REPORT */
-        .report-scroll-box { max-height: 150px; overflow-y: auto; background: #f8f9fa; border-radius: 8px; padding: 10px; border: 1px solid #eee; margin-bottom: 15px; }
-    </style>
+      --radius: 16px;
+    }
+
+    body{
+      background:var(--bg);
+      font-family:'Segoe UI',sans-serif;
+      -webkit-user-select:none;
+      user-select:none;
+      height:100vh;
+      overflow:hidden;
+    }
+
+    /* APP SHELL */
+    .app-container{
+      max-width:1000px;
+      margin:0 auto;
+      height:100vh;
+      background:#fff;
+      box-shadow:0 0 20px rgba(0,0,0,0.1);
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+
+    /* LOGIN */
+    #login-screen{
+      height:100vh; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      background:var(--primary); color:#fff;
+      position:fixed; inset:0; z-index:2000;
+    }
+    .pin-display{
+      font-size:2.5rem; letter-spacing:15px; text-align:center;
+      margin-bottom:30px;
+      background:transparent; border:none;
+      border-bottom:2px solid rgba(255,255,255,0.3);
+      color:#fff; width:220px; outline:none;
+    }
+    #numpad{
+      display:grid; grid-template-columns:repeat(3,1fr);
+      gap:15px; max-width:300px;
+    }
+    .pin-btn{
+      width:75px; height:75px; border-radius:50%;
+      font-size:1.8rem;
+      border:1px solid rgba(255,255,255,0.2);
+      background:rgba(255,255,255,0.05);
+      color:#fff;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:.1s;
+    }
+    .pin-btn:active{ background:var(--accent); transform:scale(.9); color:var(--primary); }
+
+    /* HEADER */
+    .header-bar{
+      background:#fff; padding:14px 15px;
+      display:flex; align-items:center; justify-content:space-between;
+      border-bottom:1px solid #eee;
+      flex-shrink:0;
+    }
+    .user-chip{ display:flex; align-items:center; gap:10px; }
+    .avatar{
+      width:42px; height:42px; border-radius:999px;
+      display:flex; align-items:center; justify-content:center;
+      background: linear-gradient(145deg, rgba(30,136,229,.18), rgba(25,169,116,.10));
+      border:1px solid rgba(30,136,229,.18);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* TAB CONTENT AREA */
+    .tabs-wrap{ flex:1; overflow:hidden; position:relative; background:var(--bg); }
+    .tab-view{ position:absolute; inset:0; display:none; overflow:hidden; }
+    .tab-view.active{ display:flex; flex-direction:column; }
+
+    /* SCROLL AREAS */
+    .scroll-content{
+      flex:1;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      padding:15px;
+      padding-bottom: calc(var(--bottom-nav-h) + 16px);
+    }
+
+    /* CONTROLS */
+    .ctrl-bar{
+      background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+      padding:12px;
+      border-bottom:1px solid rgba(30,136,229,.12);
+      display:flex; flex-direction:column;
+      gap:10px;
+      flex-shrink:0;
+    }
+    .driver-scroll{
+      overflow-x:auto; white-space:nowrap; padding-bottom:6px;
+      -webkit-overflow-scrolling:touch;
+    }
+    .filter-pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 14px;
+      background:#fff;
+      border:1px solid rgba(52,73,94,.14);
+      border-radius:999px;
+      margin-right:8px;
+      font-size:.9rem;
+      cursor:pointer;
+      color:#555;
+      transition:.2s;
+      box-shadow: 0 8px 18px rgba(0,0,0,.05);
+    }
+    .filter-pill.active{
+      background: linear-gradient(145deg, rgba(30,136,229,.14), rgba(25,169,116,.10));
+      border-color: rgba(30,136,229,.35);
+      color:#0f2c4a;
+      font-weight:800;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* PACKEN CARDS */
+    @media (min-width: 992px){
+      .orders-grid{ display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+    }
+    .order-card{
+      background:#fff;
+      border-radius:14px;
+      padding:14px;
+      border:1px solid rgba(0,0,0,.06);
+      border-left:6px solid #d7dde6;
+      cursor:pointer;
+      transition:.2s;
+      box-shadow: 0 10px 20px rgba(0,0,0,.06);
+    }
+    .order-card:hover{ transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .order-card.packed{
+      border-left-color: var(--green);
+      background: linear-gradient(180deg, #f5fff9 0%, #ffffff 100%);
+    }
+
+    /* PACK MODAL */
+    .item-row{ display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #eee; }
+    .item-actions{ display:flex; gap:10px; }
+    .btn-check-item{
+      width:40px; height:40px; border-radius:12px;
+      border:1px solid rgba(0,0,0,.12);
+      background:#fff; color:#bbb;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.2rem; cursor:pointer; transition:.2s;
+      box-shadow: 0 10px 18px rgba(0,0,0,.06);
+    }
+    .btn-check-item:active{ transform:scale(.95); }
+    .item-row.ok .btn-check-item.ok{ background:var(--green); color:#fff; border-color:var(--green); }
+    .item-row.ok .item-name{ text-decoration:line-through; color:#aaa; }
+    .item-row.missing .btn-check-item.missing{ background:#e67e22; color:#fff; border-color:#e67e22; }
+    .item-row.missing .item-name{ color:var(--danger); font-weight:800; }
+
+    /* SIGNATURE */
+    canvas{ border:2px dashed #95a5a6; border-radius:12px; width:100%; background:#fff; touch-action:none; }
+    .report-scroll-box{
+      max-height:150px; overflow-y:auto;
+      background:#f8f9fa; border-radius:12px;
+      padding:10px; border:1px solid #eee;
+      margin-bottom:15px;
+    }
+
+    /* BOTTOM NAV */
+    .bottom-nav{
+      height:var(--bottom-nav-h);
+      position:absolute; left:0; right:0; bottom:0;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(10px);
+      border-top:1px solid rgba(0,0,0,.08);
+      display:flex; align-items:center; justify-content:space-around;
+      z-index:120;
+      padding:8px 10px;
+    }
+    .nav-btn{
+      width:48%;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      padding:10px 12px;
+      border-radius:18px;
+      border:1px solid rgba(0,0,0,.06);
+      background: #fff;
+      box-shadow: 0 12px 26px rgba(0,0,0,.08);
+      cursor:pointer;
+      transition:.2s;
+      color:#333;
+      font-weight:800;
+      gap:4px;
+    }
+    .nav-btn i{ font-size:1.05rem; }
+    .nav-btn.active{
+      background: linear-gradient(145deg, rgba(30,136,229,.16), rgba(25,169,116,.12));
+      border-color: rgba(30,136,229,.30);
+      color:#0b2b45;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-1px);
+    }
+
+    /* 3D BUTTONS / CHIPS */
+    .btn-3d{
+      border-radius:14px !important;
+      box-shadow: 0 14px 26px rgba(0,0,0,.14);
+      border:1px solid rgba(255,255,255,.24);
+      transform: translateY(0);
+      transition:.15s;
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    .btn-3d:active{ transform: translateY(2px); box-shadow: 0 8px 16px rgba(0,0,0,.12); }
+    .btn-blue{ background: linear-gradient(145deg, #1e88e5, #1565c0); color:#fff; }
+    .btn-green{ background: linear-gradient(145deg, #19a974, #0f8f60); color:#fff; }
+    .btn-red{ background: linear-gradient(145deg, #e74c3c, #c0392b); color:#fff; }
+    .btn-gray{ background: linear-gradient(145deg, #f6f7fb, #e9edf6); color:#223; }
+
+    .mini-pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid rgba(0,0,0,.08);
+      box-shadow: 0 12px 24px rgba(0,0,0,.06);
+      font-weight:900;
+    }
+
+    .stat-chip{
+      display:inline-flex; align-items:center; gap:8px;
+      border-radius:999px;
+      padding:8px 12px;
+      font-weight:900;
+      border:1px solid rgba(0,0,0,.07);
+      box-shadow: 0 10px 20px rgba(0,0,0,.08);
+      background:#fff;
+    }
+    .stat-chip small{ font-weight:700; opacity:.7; }
+    .stat-chip .bubble{
+      width:26px; height:26px; border-radius:999px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.85rem;
+      background: rgba(0,0,0,.06);
+      border:1px solid rgba(0,0,0,.06);
+    }
+
+    /* Inputs lifted feel */
+    .form-control, .form-select{
+      border-radius:14px;
+      border:1px solid rgba(0,0,0,.10);
+      box-shadow: 0 12px 24px rgba(0,0,0,.06);
+    }
+    .form-control:focus, .form-select:focus{
+      border-color: rgba(30,136,229,.45);
+      box-shadow: var(--ring), 0 14px 26px rgba(0,0,0,.08);
+    }
+    .modal-content{
+      border-radius:18px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(0,0,0,.08);
+      overflow:hidden;
+    }
+    .modal-header{
+      background: linear-gradient(145deg, rgba(30,136,229,.14), rgba(25,169,116,.10));
+      border-bottom:1px solid rgba(0,0,0,.06);
+    }
+
+    /* Inventory */
+    .inv-topbar{
+      background: linear-gradient(180deg, rgba(30,136,229,.10) 0%, rgba(25,169,116,.06) 100%);
+      border-bottom: 1px solid rgba(30,136,229,.14);
+    }
+    .inv-table{
+      border-radius: var(--radius);
+      overflow:auto;
+      border:1px solid rgba(0,0,0,.07);
+      background:#fff;
+      box-shadow: var(--shadow-md);
+    }
+    .inv-table table{ margin:0; border-collapse:separate; border-spacing:0; min-width: 840px; }
+    .inv-table th{
+      position:sticky; top:0; z-index:3;
+      background: linear-gradient(180deg, #ffffff 0%, #f2f7ff 100%);
+      border-bottom:1px solid rgba(0,0,0,.06);
+      font-size:.88rem;
+      color:#234;
+      white-space:nowrap;
+    }
+    .inv-row-low{ background: rgba(241,196,15,.18) !important; }
+    .inv-row-neg{ background: rgba(231,76,60,.15) !important; }
+    .inv-row-exp{ background: rgba(30,136,229,.10) !important; }
+
+    /* Sticky action col so edit is always visible */
+    .inv-table th:last-child,
+    .inv-table td:last-child{
+      position:sticky;
+      right:0;
+      background: inherit;
+      z-index:2;
+      box-shadow: -10px 0 18px rgba(0,0,0,.06);
+      min-width:72px;
+    }
+    .inv-edit-btn{
+      width:38px; height:38px;
+      border-radius:12px;
+      box-shadow: 0 10px 18px rgba(0,0,0,.08);
+    }
+  </style>
 </head>
+
 <body>
 
-<div id="login-screen"><i class="fa fa-dolly fa-3x mb-4 text-warning"></i><input type="password" id="pinInput" class="pin-display" readonly placeholder="••••"><div id="numpad"></div></div>
+  <!-- LOGIN -->
+  <div id="login-screen">
+    <i class="fa fa-dolly fa-3x mb-4 text-warning"></i>
+    <input type="password" id="pinInput" class="pin-display" readonly placeholder="••••">
+    <div id="numpad"></div>
+  </div>
 
-<div class="app-container d-none" id="main-screen">
+  <!-- MAIN -->
+  <div class="app-container d-none" id="main-screen">
+
+    <!-- header -->
     <div class="header-bar">
-        <div class="d-flex align-items-center gap-2">
-            <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="fa fa-user"></i></div>
-            <div><div class="small text-muted" style="line-height:1">Lagerist</div><div class="fw-bold" id="userNameDisplay">...</div></div>
+      <div class="user-chip">
+        <div class="avatar"><i class="fa fa-user"></i></div>
+        <div>
+          <div class="small text-muted" style="line-height:1">Lagerist</div>
+          <div class="fw-bold" id="userNameDisplay">...</div>
         </div>
-        <div class="d-flex gap-2"><button class="btn btn-outline-danger btn-sm" onclick="location.reload()"><i class="fa fa-power-off"></i></button></div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-danger btn-sm" onclick="location.reload()"><i class="fa fa-power-off"></i></button>
+      </div>
     </div>
-    
-    <div class="ctrl-bar">
-        <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
-            <input type="date" id="workDate" class="form-control form-control-sm w-auto fw-bold" onchange="window.renderOrders()">
-            <div class="d-flex gap-1">
-                <button class="btn btn-warning btn-sm fw-bold" onclick="window.sendStockAlert()"><i class="fa fa-exclamation-triangle"></i> FEHLT?</button>
-                <button class="btn btn-primary btn-sm fw-bold" onclick="showPackList()"><i class="fa fa-list-alt"></i> LISTE</button>
+
+    <!-- tabs -->
+    <div class="tabs-wrap">
+
+      <!-- TAB 1: PACKEN -->
+      <div class="tab-view active" id="tab-pack">
+        <div class="ctrl-bar">
+          <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <input type="date" id="workDate" class="form-control form-control-sm w-auto fw-bold"
+                     onchange="window.renderOrders(); window.renderDriverFilters();" />
+              <span class="mini-pill">
+                <i class="fa fa-receipt" style="color:var(--blue)"></i>
+                <span id="dayOrdersCount">0</span>
+                <small class="ms-1">Aufträge</small>
+              </span>
             </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-warning btn-sm fw-bold btn-3d" onclick="window.sendStockAlert()">
+                <i class="fa fa-exclamation-triangle"></i> FEHLT?
+              </button>
+              <button class="btn btn-primary btn-sm fw-bold btn-3d" onclick="showPackList()">
+                <i class="fa fa-list-alt"></i> LISTE
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <input type="text" id="searchInput" class="form-control"
+                   placeholder="🔍 Suchen (Kunde, Artikel...)" onkeyup="window.renderOrders()">
+          </div>
+
+          <div class="driver-scroll" id="driverFilters"></div>
         </div>
-        
-        <div class="mb-2">
-            <input type="text" id="searchInput" class="form-control" placeholder="🔍 Suchen (Kunde, Artikel...)" onkeyup="window.renderOrders()">
+
+        <div class="scroll-content">
+          <div id="ordersList" class="orders-grid"></div>
+          <div id="emptyState" class="text-center text-muted mt-5 d-none">
+            <i class="fa fa-check-circle fa-3x mb-3 opacity-25"></i>
+            <p>Keine Aufträge für diese Auswahl.</p>
+          </div>
+
+          <!-- Tagesabschluss at bottom (not fixed) -->
+          <div class="mt-3">
+            <button class="btn btn-dark w-100 fw-bold py-2 shadow-sm btn-3d" onclick="openReportModal()">
+              <i class="fa fa-flag-checkered me-2"></i> TAGESABSCHLUSS
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: BESTAND -->
+      <div class="tab-view" id="tab-inv">
+        <div class="ctrl-bar inv-topbar">
+          <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+            <div class="fw-bold d-flex align-items-center gap-2">
+              <i class="fa fa-warehouse" style="color:var(--blue)"></i>
+              Inventur / Bestand
+              <span class="small text-muted fw-semibold">Negativ – Exp (14 Tage) – Low – Normal · Smart Sort · SKU = DocID</span>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button class="btn btn-blue btn-3d btn-sm" onclick="openInvModal('add')">
+                <i class="fa fa-plus"></i> Artikel
+              </button>
+              <button class="btn btn-gray btn-3d btn-sm" onclick="refreshInventory(true)">
+                <i class="fa fa-rotate"></i> Reload
+              </button>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 flex-wrap align-items-center">
+            <div class="flex-grow-1">
+              <input id="invSearch" class="form-control" placeholder="🔎 Artikel suchen (SKU, Name, Kategorie, Barcode...)" onkeyup="renderInventory()">
+            </div>
+
+            <span class="stat-chip">
+              <span class="bubble"><i class="fa fa-boxes-stacked"></i></span>
+              <span id="invTotalItems">0</span>
+              <small>Items</small>
+            </span>
+
+            <span class="stat-chip">
+              <span class="bubble"><i class="fa fa-coins"></i></span>
+              <span id="invTotalValue">CHF 0.00</span>
+              <small>Value</small>
+            </span>
+
+            <span class="stat-chip" style="background: rgba(241,196,15,.18)">
+              <span class="bubble"><i class="fa fa-triangle-exclamation"></i></span>
+              <span>Low</span>
+              <span class="badge bg-dark ms-1" id="cntLow">0</span>
+            </span>
+
+            <span class="stat-chip" style="background: rgba(30,136,229,.12)">
+              <span class="bubble"><i class="fa fa-hourglass-half"></i></span>
+              <span>Exp</span>
+              <span class="badge bg-dark ms-1" id="cntExp">0</span>
+            </span>
+
+            <span class="stat-chip" style="background: rgba(231,76,60,.16)">
+              <span class="bubble"><i class="fa fa-skull-crossbones"></i></span>
+              <span>Neg</span>
+              <span class="badge bg-dark ms-1" id="cntNeg">0</span>
+            </span>
+          </div>
+
+          <div class="d-flex gap-2 flex-wrap align-items-center">
+            <button class="btn btn-green btn-3d btn-sm" onclick="openMovementModal('return')"><i class="fa fa-rotate-left"></i> Return</button>
+            <button class="btn btn-red btn-3d btn-sm" onclick="openMovementModal('waste')"><i class="fa fa-trash"></i> Waste</button>
+            <button class="btn btn-gray btn-3d btn-sm" onclick="openMovementModal('export')"><i class="fa fa-file-export"></i> Export</button>
+            <button class="btn btn-gray btn-3d btn-sm" onclick="openMovementLog()"><i class="fa fa-wave-square"></i> Bewegung</button>
+
+            <div class="ms-auto small">
+              <a href="javascript:void(0)" onclick="invShowAll()" class="text-decoration-none fw-bold" style="color:var(--blue)">Alle anzeigen</a>
+            </div>
+          </div>
         </div>
 
-        <div class="driver-scroll" id="driverFilters"></div>
+        <div class="scroll-content">
+          <div class="inv-table" id="invTableWrap">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>Name</th>
+                  <th>Preis</th>
+                  <th>Qty</th>
+                  <th>Min</th>
+                  <th>Ablauf</th>
+                  <th>Lagerplatz</th>
+                  <th class="text-end">Aktion</th>
+                </tr>
+              </thead>
+              <tbody id="invTbody">
+                <tr><td colspan="8" class="text-center text-muted py-4">Lade Bestand…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    <div class="scroll-content">
-        <div id="ordersList" class="orders-grid"></div>
-        <div id="emptyState" class="text-center text-muted mt-5 d-none"><i class="fa fa-check-circle fa-3x mb-3 opacity-25"></i><p>Keine Aufträge für diese Auswahl.</p></div>
+    <!-- bottom nav -->
+    <div class="bottom-nav">
+      <div class="nav-btn active" id="navPack" onclick="switchTab('pack')">
+        <i class="fa fa-box-open"></i>
+        <div style="font-size:.9rem">Packen</div>
+      </div>
+      <div class="nav-btn" id="navInv" onclick="switchTab('inv')">
+        <i class="fa fa-chart-column"></i>
+        <div style="font-size:.9rem">Bestand</div>
+      </div>
     </div>
 
-    <div class="bottom-action">
-        <button class="btn btn-dark w-100 fw-bold py-2 shadow-sm" onclick="openReportModal()"><i class="fa fa-flag-checkered me-2"></i> TAGESABSCHLUSS</button>
+  </div>
+
+  <!-- PACK MODAL -->
+  <div class="modal fade" id="packModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 shadow-sm">
+          <div style="width:100%">
+            <h5 class="modal-title fw-bold" id="packCustName">...</h5>
+            <select id="modalDriverSelect" class="form-select form-select-sm mt-2 bg-light border-0 fw-bold" onchange="updateOrderDriver(this.value)"></select>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="progress mb-3" style="height:10px;">
+            <div class="progress-bar bg-success" id="packProgress" style="width:0%"></div>
+          </div>
+          <div id="packItemsList" class="mb-4"></div>
+          <div class="alert alert-light border text-muted small text-center">
+            <i class="fa fa-info-circle"></i> Bitte jeden Artikel markieren (Grün/Orange)
+          </div>
+        </div>
+        <div class="modal-footer border-0 shadow-lg">
+          <button id="btnFinishPack" class="btn btn-success w-100 py-3 fw-bold btn-3d" disabled onclick="finishPacking()">FERTIG PACKEN</button>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 
-<div class="modal fade" id="packModal" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content"><div class="modal-header border-0 shadow-sm"><div style="width:100%"><h5 class="modal-title fw-bold" id="packCustName">...</h5><select id="modalDriverSelect" class="form-select form-select-sm mt-2 bg-light border-0 fw-bold" onchange="updateOrderDriver(this.value)"></select></div><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="progress mb-3" style="height: 10px;"><div class="progress-bar bg-success" id="packProgress" style="width: 0%"></div></div><div id="packItemsList" class="mb-4"></div><div class="alert alert-light border text-muted small text-center"><i class="fa fa-info-circle"></i> Bitte jeden Artikel markieren (Grün/Orange)</div></div><div class="modal-footer border-0 shadow-lg"><button id="btnFinishPack" class="btn btn-success w-100 py-3 fw-bold" disabled onclick="finishPacking()">FERTIG PACKEN</button></div></div></div></div>
-
-<div class="modal fade" id="packListModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title" id="plTitle">Packliste</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><ul class="list-group list-group-flush" id="plBody"></ul></div><div class="modal-footer"><button class="btn btn-primary w-100" data-bs-dismiss="modal">OK</button></div></div></div></div>
-
-<div class="modal fade" id="reportModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-warning text-dark"><h5 class="modal-title">Tagesabschluss</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
-    <div class="d-flex justify-content-between mb-3 align-items-center">
-        <span>Anzahl Aufträge:</span><h4 class="fw-bold m-0" id="repPackedCount">0</h4>
+  <!-- PACK LIST MODAL -->
+  <div class="modal fade" id="packListModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header" style="background:linear-gradient(145deg, #1e88e5, #1565c0); color:#fff">
+          <h5 class="modal-title" id="plTitle">Packliste</h5>
+          <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-0">
+          <ul class="list-group list-group-flush" id="plBody"></ul>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary w-100 btn-3d" data-bs-dismiss="modal">OK</button>
+        </div>
+      </div>
     </div>
-    
-    <h6 class="fw-bold text-success"><i class="fa fa-check-double"></i> Gepackte Ware (Gesamt):</h6>
-    <div id="repPackedList" class="report-scroll-box"></div>
-    
-    <h6 class="fw-bold text-danger"><i class="fa fa-exclamation-circle"></i> Fehlmengen:</h6>
-    <div id="repMissingList" class="report-scroll-box"></div>
-    
-    <h6 class="text-center mt-3 small text-muted">UNTERSCHRIFT (Pflicht)</h6>
-    <div style="position:relative; width:100%; height:110px;">
-        <canvas id="sigPad" style="width:100%; height:100%; border:2px dashed #ccc; border-radius:8px;"></canvas>
+  </div>
+
+  <!-- REPORT MODAL -->
+  <div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header" style="background:linear-gradient(145deg, rgba(241,196,15,.25), rgba(30,136,229,.12)); color:#223">
+          <h5 class="modal-title fw-bold">Tagesabschluss</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex justify-content-between mb-3 align-items-center">
+            <span>Anzahl Aufträge:</span>
+            <h4 class="fw-bold m-0" id="repPackedCount">0</h4>
+          </div>
+
+          <h6 class="fw-bold text-success"><i class="fa fa-check-double"></i> Gepackte Ware (Gesamt):</h6>
+          <div id="repPackedList" class="report-scroll-box"></div>
+
+          <h6 class="fw-bold text-danger"><i class="fa fa-exclamation-circle"></i> Fehlmengen:</h6>
+          <div id="repMissingList" class="report-scroll-box"></div>
+
+          <h6 class="text-center mt-3 small text-muted">UNTERSCHRIFT (Pflicht)</h6>
+          <div style="position:relative; width:100%; height:110px;">
+            <canvas id="sigPad" style="width:100%; height:100%; border:2px dashed #ccc; border-radius:12px;"></canvas>
+          </div>
+          <div class="text-end">
+            <button class="btn btn-link btn-sm text-danger text-decoration-none" onclick="clearSig()">Löschen</button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-dark w-100 py-3 fw-bold btn-3d" onclick="submitReport()">Abschluss Senden</button>
+        </div>
+      </div>
     </div>
-    <div class="text-end"><button class="btn btn-link btn-sm text-danger text-decoration-none" onclick="clearSig()">Löschen</button></div>
-</div><div class="modal-footer"><button class="btn btn-dark w-100 py-3 fw-bold" onclick="submitReport()">Abschluss Senden</button></div></div></div></div>
+  </div>
 
-<div class="modal fade" id="invoiceModal" tabindex="-1"><div class="modal-dialog modal-fullscreen"><div class="modal-content bg-dark"><div class="modal-header border-0"><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-0 d-flex align-items-center justify-content-center"><img id="fullInvoiceImg" style="max-width:100%; max-height:100vh;"></div></div></div></div>
+  <!-- INVOICE FULLSCREEN -->
+  <div class="modal fade" id="invoiceModal" tabindex="-1">
+    <div class="modal-dialog modal-fullscreen">
+      <div class="modal-content bg-dark">
+        <div class="modal-header border-0">
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-0 d-flex align-items-center justify-content-center">
+          <img id="fullInvoiceImg" style="max-width:100%; max-height:100vh;">
+        </div>
+      </div>
+    </div>
+  </div>
 
-<script type="module">
+  <!-- INVENTORY ADD/EDIT MODAL -->
+  <div class="modal fade" id="invModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0">
+          <div class="w-100">
+            <div class="d-flex align-items-center justify-content-between">
+              <h5 class="modal-title fw-bold" id="invModalTitle">Artikel hinzufügen</h5>
+              <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="d-flex gap-2 mt-2">
+              <button class="btn btn-blue btn-3d btn-sm" id="tabBasicBtn" onclick="invSwitchFormTab('basic')">
+                <i class="fa fa-layer-group me-1"></i> Basis
+              </button>
+              <button class="btn btn-gray btn-3d btn-sm" id="tabAdvBtn" onclick="invSwitchFormTab('adv')">
+                <i class="fa fa-sliders me-1"></i> Erweitert
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" id="invMode" value="add">
+          <input type="hidden" id="invSkuHidden" value="">
+
+          <div id="invFormBasic">
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label class="form-label fw-bold">Name</label>
+                <input id="invName" class="form-control" placeholder="z.B. Cola">
+                <div class="small text-muted mt-1">Matching: SKU (DocID) zuerst, sonst normalizedName (trim/lowercase/whitespace)</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-bold">SKU (optional)</label>
+                <input id="invSku" class="form-control" placeholder="z.B. 006">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Preis</label>
+                <input id="invPrice" class="form-control" type="number" step="0.01" placeholder="1.50">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Qty</label>
+                <input id="invQty" class="form-control" type="number" step="0.01" placeholder="100">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Unit (optional)</label>
+                <input id="invUnit" class="form-control" placeholder="Stk">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Mindestbestand (minQty)</label>
+                <input id="invMinQty" class="form-control" type="number" step="0.01" placeholder="5">
+              </div>
+              <div class="col-md-8">
+                <label class="form-label fw-bold">Lagerplatz</label>
+                <input id="invLocation" class="form-control" placeholder="Regal A / Fach 3">
+              </div>
+            </div>
+          </div>
+
+          <div id="invFormAdv" class="d-none">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Ablaufdatum</label>
+                <input id="invExpDate" class="form-control" type="date">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Gewicht</label>
+                <input id="invWeight" class="form-control" type="number" step="0.001" placeholder="1.5">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Einheit</label>
+                <select id="invWeightUnit" class="form-select">
+                  <option value="">—</option>
+                  <option value="kg">kg</option>
+                  <option value="g">g</option>
+                  <option value="l">l</option>
+                  <option value="ml">ml</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Barcode</label>
+                <input id="invBarcode" class="form-control" placeholder="EAN / QR code value">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Kategorie</label>
+                <input id="invCategory" class="form-control" placeholder="z.B. Getränke">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Lieferant</label>
+                <input id="invSupplier" class="form-control" placeholder="z.B. Supplier GmbH">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Lot / Batch</label>
+                <input id="invBatch" class="form-control" placeholder="BATCH-2041">
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-bold">Notizen</label>
+                <textarea id="invNotes" class="form-control" rows="2" placeholder="Optional..."></textarea>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer border-0">
+          <button class="btn btn-gray btn-3d" data-bs-dismiss="modal">Abbrechen</button>
+          <button class="btn btn-blue btn-3d" onclick="saveInventoryItem()">Speichern</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOVEMENT LOG MODAL -->
+  <div class="modal fade" id="movLogModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0">
+          <div class="w-100">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="modal-title fw-bold"><i class="fa fa-wave-square me-2" style="color:var(--blue)"></i>Bewegung (Monat)</h5>
+              <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap mt-2">
+              <input type="month" id="movMonth" class="form-control w-auto" onchange="loadMovementLog()">
+              <select id="movType" class="form-select w-auto" onchange="loadMovementLog()">
+                <option value="">Alle Typen</option>
+                <option value="sale">sale</option>
+                <option value="return">return</option>
+                <option value="waste">waste</option>
+                <option value="adjust">adjust</option>
+              </select>
+              <input id="movSearch" class="form-control" placeholder="Suche (SKU/Name/OrderId...)" onkeyup="renderMovementLog()">
+              <button class="btn btn-gray btn-3d btn-sm" onclick="exportMovementCSV()"><i class="fa fa-file-csv"></i> CSV</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="fw-bold">Summe Value: <span id="movSum">CHF 0.00</span></div>
+            <div class="small text-muted">Für Buchhaltung/Steuern (monatlich)</div>
+          </div>
+          <div class="inv-table">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>Datum</th>
+                  <th>Typ</th>
+                  <th>SKU</th>
+                  <th>Name</th>
+                  <th class="text-end">QtyΔ</th>
+                  <th class="text-end">ValueΔ</th>
+                  <th>Ref</th>
+                  <th>By</th>
+                </tr>
+              </thead>
+              <tbody id="movTbody">
+                <tr><td colspan="8" class="text-center text-muted py-4">Lade…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button class="btn btn-gray btn-3d" data-bs-dismiss="modal">Schließen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOVEMENT ACTION MODAL -->
+  <div class="modal fade" id="movActModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0">
+          <div class="w-100">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="modal-title fw-bold" id="movActTitle">Bewegung</h5>
+              <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="small text-muted">Artikel + Menge. Return erhöht Bestand, Waste reduziert Bestand · wird protokolliert</div>
+          </div>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="movActType" value="">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label fw-bold">SKU</label>
+              <input id="movSku" class="form-control" placeholder="z.B. 006">
+            </div>
+            <div class="col-md-8">
+              <label class="form-label fw-bold">Name (optional)</label>
+              <input id="movName" class="form-control" placeholder="falls SKU nicht bekannt">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Menge</label>
+              <input id="movQty" class="form-control" type="number" step="0.01" placeholder="1">
+            </div>
+            <div class="col-md-8">
+              <label class="form-label fw-bold">Grund / Notiz</label>
+              <input id="movReason" class="form-control" placeholder="z.B. beschädigt, abgelaufen, Rückgabe…">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button class="btn btn-gray btn-3d" data-bs-dismiss="modal">Abbrechen</button>
+          <button class="btn btn-blue btn-3d" onclick="applyMovement()">Speichern</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, query, where, updateDoc, doc, getDocs, addDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    const db = getFirestore(initializeApp({ apiKey: "AIzaSyCY9TmJwzoJRWFTAjhDFBD0eFMR4YKTHJQ", projectId: "listapp-96713" }));
-    
-    let currentUser = null, allOrders = [], drivers = [], currentOrderId = null, currentDriverFilter = 'all', sigCanvas, sigCtx, isDrawing = false;
-    let currentPackState = []; 
+    import {
+      getFirestore,
+      collection,
+      onSnapshot,
+      query,
+      where,
+      updateDoc,
+      doc,
+      getDocs,
+      getDoc,
+      setDoc,
+      addDoc,
+      orderBy,
+      limit,
+      increment
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // SAFE UI HELPERS
-    const uiSetText = (id, txt) => { const el = document.getElementById(id); if(el) el.innerText = txt; }
-    const uiSetHtml = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; }
-    const uiShow = (id, show) => { const el = document.getElementById(id); if(el) el.classList.toggle('d-none', !show); }
+    const db = getFirestore(initializeApp({
+      apiKey: "AIzaSyCY9TmJwzoJRWFTAjhDFBD0eFMR4YKTHJQ",
+      projectId: "listapp-96713"
+    }));
 
+    // ====== STATE ======
+    let currentUser = null;
+    let allOrders = [];
+    let drivers = [];
+    let currentOrderId = null;
+    let currentDriverFilter = 'all';
+    let sigCanvas, sigCtx, isDrawing = false;
+    let currentPackState = [];
+
+    // inventory
+    let inventory = [];
+    let invLoadedOnce = false;
+
+    // movement
+    let movementRows = [];
+    let movementFiltered = [];
+
+    // ====== SAFE HELPERS ======
+    const uiSetText = (id, txt) => { const el = document.getElementById(id); if (el) el.innerText = txt; };
+    const uiShow = (id, show) => { const el = document.getElementById(id); if (el) el.classList.toggle('d-none', !show); };
+
+    const moneyCHF = (n) => {
+      const x = Number(n || 0);
+      return "CHF " + x.toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    const normalizeName = (s) => (s || "")
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+
+    const extractSkuFromName = (name) => {
+      const s = (name || "").trim();
+      const m = s.match(/^(\d{1,6})\s*[\/\- ]/); // "006 /..." or "006-..." or "006 ..."
+      return m ? m[1] : "";
+    };
+
+    const parseQtyNumber = (qtyField) => {
+      if (qtyField === null || qtyField === undefined) return 0;
+      if (typeof qtyField === "number") return qtyField;
+      const n = parseFloat(String(qtyField).replace(",", "."));
+      return isNaN(n) ? 0 : n;
+    };
+
+    const escapeHtml = (str) => (str ?? "").toString()
+      .replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;").replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+    const escapeJs = (str) => (str ?? "").toString().replaceAll("\\", "\\\\").replaceAll("'", "\\'");
+
+    // ====== INIT DATE ======
     document.getElementById('workDate').value = new Date().toISOString().split('T')[0];
 
-    // LOGIN & INIT
+    // ====== TAB SWITCH ======
+    window.switchTab = (t) => {
+      const pack = document.getElementById('tab-pack');
+      const inv = document.getElementById('tab-inv');
+      const navPack = document.getElementById('navPack');
+      const navInv = document.getElementById('navInv');
+
+      if (t === 'pack') {
+        pack.classList.add('active');
+        inv.classList.remove('active');
+        navPack.classList.add('active');
+        navInv.classList.remove('active');
+      } else {
+        inv.classList.add('active');
+        pack.classList.remove('active');
+        navInv.classList.add('active');
+        navPack.classList.remove('active');
+        if (!invLoadedOnce) refreshInventory(true);
+      }
+    };
+
+    // ====== LOGIN ======
     const numpad = document.getElementById('numpad');
-    [1,2,3,4,5,6,7,8,9,'C',0,'➜'].forEach(n => { const btn=document.createElement('div'); btn.className='pin-btn'; btn.innerHTML=n; if(n==='➜'){btn.style.background='#f1c40f'; btn.style.color='black'; btn.onclick=()=>tryLogin(document.getElementById('pinInput').value);}else if(n==='C'){btn.style.background='#e74c3c'; btn.onclick=()=>document.getElementById('pinInput').value='';}else{btn.onclick=()=>document.getElementById('pinInput').value+=n;} numpad.appendChild(btn); });
+    [1,2,3,4,5,6,7,8,9,'C',0,'➜'].forEach(n => {
+      const btn = document.createElement('div');
+      btn.className = 'pin-btn';
+      btn.innerHTML = n;
+      if (n === '➜') {
+        btn.style.background = '#f1c40f';
+        btn.style.color = 'black';
+        btn.onclick = () => tryLogin(document.getElementById('pinInput').value);
+      } else if (n === 'C') {
+        btn.style.background = '#e74c3c';
+        btn.onclick = () => document.getElementById('pinInput').value = '';
+      } else {
+        btn.onclick = () => document.getElementById('pinInput').value += n;
+      }
+      numpad.appendChild(btn);
+    });
 
     async function tryLogin(pin) {
-        if(!pin) return;
-        try {
-            const q = query(collection(db, "warehouse_users"), where("pin", "==", pin));
-            const snap = await getDocs(q);
-            if(!snap.empty) { 
-                currentUser = snap.docs[0].data(); 
-                uiSetText('userNameDisplay', currentUser.name); 
-                uiShow('login-screen', false); 
-                uiShow('main-screen', true); 
-                loadDrivers(); 
-                startSync(); 
-            } else { 
-                alert("Falsch!"); document.getElementById('pinInput').value = ''; 
-            }
-        } catch (e) { alert("Login Fehler: " + e.message); }
+      if (!pin) return;
+      try {
+        const q = query(collection(db, "warehouse_users"), where("pin", "==", pin));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          currentUser = snap.docs[0].data();
+          uiSetText('userNameDisplay', currentUser.name);
+          uiShow('login-screen', false);
+          uiShow('main-screen', true);
+
+          await loadDrivers();
+          startSyncOrders();
+          startSyncInventory();
+        } else {
+          alert("Falsch!");
+          document.getElementById('pinInput').value = '';
+        }
+      } catch (e) {
+        alert("Login Fehler: " + e.message);
+      }
     }
 
     async function loadDrivers() {
-        try {
-            const snap = await getDocs(collection(db, "drivers"));
-            drivers = []; snap.forEach(d => drivers.push(d.data().name));
-            renderDriverFilters();
-        } catch(e) { console.error(e); }
+      try {
+        const snap = await getDocs(collection(db, "drivers"));
+        drivers = [];
+        snap.forEach(d => drivers.push(d.data().name));
+        window.renderDriverFilters();
+      } catch (e) {
+        console.error(e);
+      }
     }
 
-    function renderDriverFilters() {
-        const bar = document.getElementById('driverFilters');
-        if(!bar) return;
-        bar.innerHTML = `<span class="filter-pill ${currentDriverFilter==='all'?'active':''}" onclick="setFilter('all')">Alle</span>` + 
-                        `<span class="filter-pill ${currentDriverFilter==='none'?'active':''}" onclick="setFilter('none')">Ohne Fahrer</span>`;
-        drivers.forEach(d => { bar.innerHTML += `<span class="filter-pill ${currentDriverFilter===d?'active':''}" onclick="setFilter('${d}')">${d}</span>`; });
+    // ====== ORDERS SYNC ======
+    function startSyncOrders() {
+      onSnapshot(collection(db, "orders"), (s) => {
+        allOrders = [];
+        s.forEach(d => allOrders.push({ id: d.id, ...d.data() }));
+        window.renderDriverFilters();
+        window.renderOrders();
+      });
     }
-    window.setFilter = (f) => { currentDriverFilter = f; renderDriverFilters(); window.renderOrders(); };
 
-    function startSync() {
-        onSnapshot(collection(db, "orders"), (s) => {
-            allOrders = []; s.forEach(d => allOrders.push({id: d.id, ...d.data()}));
-            window.renderOrders();
+    function getDriverCountsForDay(selectedDate){
+      const counts = { all:0, none:0 };
+      allOrders
+        .filter(o => o.deliveryDate === selectedDate && o.status !== 'Delivered' && o.status !== 'Returned')
+        .forEach(o=>{
+          counts.all++;
+          if(!o.assignedDriver) counts.none++;
+          else counts[o.assignedDriver] = (counts[o.assignedDriver]||0)+1;
         });
+      return counts;
     }
+
+    window.renderDriverFilters = () => {
+      const bar = document.getElementById('driverFilters');
+      if (!bar) return;
+
+      const selectedDate = document.getElementById('workDate').value;
+      const c = getDriverCountsForDay(selectedDate);
+
+      bar.innerHTML =
+        `<span class="filter-pill ${currentDriverFilter==='all'?'active':''}" onclick="setFilter('all')">
+          Alle <span class="badge bg-light text-dark ms-1">${c.all||0}</span>
+        </span>` +
+        `<span class="filter-pill ${currentDriverFilter==='none'?'active':''}" onclick="setFilter('none')">
+          Ohne Fahrer <span class="badge bg-light text-dark ms-1">${c.none||0}</span>
+        </span>`;
+
+      drivers.forEach(d => {
+        const n = c[d] || 0;
+        bar.innerHTML +=
+          `<span class="filter-pill ${currentDriverFilter===d?'active':''}" onclick="setFilter('${escapeJs(d)}')">
+            ${escapeHtml(d)} <span class="badge bg-light text-dark ms-1">${n}</span>
+          </span>`;
+      });
+    };
+
+    window.setFilter = (f) => {
+      currentDriverFilter = f;
+      window.renderDriverFilters();
+      window.renderOrders();
+    };
 
     window.renderOrders = () => {
-        const list = document.getElementById('ordersList'); 
-        if(!list) return;
-        list.innerHTML = '';
-        
-        const selectedDate = document.getElementById('workDate').value;
-        const searchText = document.getElementById('searchInput').value.toLowerCase(); 
+      const list = document.getElementById('ordersList');
+      if (!list) return;
+      list.innerHTML = '';
 
-        let filtered = allOrders.filter(o => o.deliveryDate === selectedDate && o.status !== 'Delivered' && o.status !== 'Returned');
+      const selectedDate = document.getElementById('workDate').value;
+      const searchText = (document.getElementById('searchInput').value || "").toLowerCase();
 
-        if (currentDriverFilter !== 'all') {
-            if (currentDriverFilter === 'none') filtered = filtered.filter(o => !o.assignedDriver);
-            else filtered = filtered.filter(o => o.assignedDriver === currentDriverFilter);
-        }
+      let filtered = allOrders.filter(o => o.deliveryDate === selectedDate && o.status !== 'Delivered' && o.status !== 'Returned');
 
-        if (searchText) {
-            filtered = filtered.filter(o => {
-                const cName = o.customerName.toLowerCase();
-                const iNames = o.items ? o.items.map(i => i.name.toLowerCase()).join(' ') : '';
-                return cName.includes(searchText) || iNames.includes(searchText);
-            });
-        }
+      if (currentDriverFilter !== 'all') {
+        if (currentDriverFilter === 'none') filtered = filtered.filter(o => !o.assignedDriver);
+        else filtered = filtered.filter(o => o.assignedDriver === currentDriverFilter);
+      }
 
-        if(filtered.length === 0) { uiShow('emptyState', true); return; }
-        uiShow('emptyState', false);
-        
-        filtered.sort((a,b) => (a.status==='Packed') - (b.status==='Packed')); 
-
-        filtered.forEach(o => {
-            const isPacked = o.status === 'Packed';
-            const icon = isPacked ? '<i class="fa fa-check-circle text-success fa-2x"></i>' : '<i class="fa fa-box-open text-primary fa-2x"></i>';
-            const drvName = o.assignedDriver || '<span class="text-danger fw-bold">Kein Fahrer</span>';
-            const eyeBtn = o.invoiceImg ? `<button class="btn btn-sm btn-outline-info me-2" onclick="event.stopPropagation(); showInvoice('${o.id}')"><i class="fa fa-eye"></i></button>` : '';
-            list.innerHTML += `<div class="order-card ${isPacked?'packed':''}" onclick="openPackModal('${o.id}')"><div class="d-flex justify-content-between align-items-center"><div><div class="small text-muted mb-1"><i class="fa fa-truck"></i> ${drvName}</div><h6 class="fw-bold m-0 text-truncate" style="max-width: 180px;">${o.customerName.split('|')[0]}</h6><small class="text-muted">${o.items.length} Pos.</small></div><div class="d-flex align-items-center">${eyeBtn}${icon}</div></div></div>`;
+      if (searchText) {
+        filtered = filtered.filter(o => {
+          const cName = (o.customerName || "").toLowerCase();
+          const iNames = o.items ? o.items.map(i => (i.name || "").toLowerCase()).join(' ') : '';
+          return cName.includes(searchText) || iNames.includes(searchText);
         });
+      }
+
+      uiSetText('dayOrdersCount', filtered.length);
+
+      if (filtered.length === 0) { uiShow('emptyState', true); return; }
+      uiShow('emptyState', false);
+
+      filtered.sort((a,b) => (a.status==='Packed') - (b.status==='Packed'));
+
+      filtered.forEach(o => {
+        const isPacked = o.status === 'Packed';
+        const icon = isPacked ? '<i class="fa fa-check-circle text-success fa-2x"></i>' : '<i class="fa fa-box-open text-primary fa-2x"></i>';
+        const drvName = o.assignedDriver || '<span class="text-danger fw-bold">Kein Fahrer</span>';
+        const eyeBtn = o.invoiceImg ? `<button class="btn btn-sm btn-outline-info me-2" onclick="event.stopPropagation(); showInvoice('${o.id}')"><i class="fa fa-eye"></i></button>` : '';
+
+        list.innerHTML += `
+          <div class="order-card ${isPacked?'packed':''}" onclick="openPackModal('${o.id}')">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="small text-muted mb-1"><i class="fa fa-truck"></i> ${drvName}</div>
+                <h6 class="fw-bold m-0 text-truncate" style="max-width: 220px;">${escapeHtml((o.customerName||"").split('|')[0])}</h6>
+                <small class="text-muted">${(o.items||[]).length} Pos.</small>
+              </div>
+              <div class="d-flex align-items-center">${eyeBtn}${icon}</div>
+            </div>
+          </div>`;
+      });
     };
 
-    window.showInvoice = (id) => { const o = allOrders.find(x => x.id === id); if(o && o.invoiceImg) { document.getElementById('fullInvoiceImg').src = o.invoiceImg; new bootstrap.Modal(document.getElementById('invoiceModal')).show(); } };
+    window.showInvoice = (id) => {
+      const o = allOrders.find(x => x.id === id);
+      if (o && o.invoiceImg) {
+        document.getElementById('fullInvoiceImg').src = o.invoiceImg;
+        new bootstrap.Modal(document.getElementById('invoiceModal')).show();
+      }
+    };
 
     window.showPackList = () => {
-        const selectedDate = document.getElementById('workDate').value;
-        let filtered = allOrders.filter(o => o.deliveryDate === selectedDate && o.status !== 'Delivered' && o.status !== 'Returned');
-        
-        let title = "Gesamt Packliste";
-        if(currentDriverFilter !== 'all' && currentDriverFilter !== 'none') { filtered = filtered.filter(o => o.assignedDriver === currentDriverFilter); title = "Packliste: " + currentDriverFilter; } 
-        else if (currentDriverFilter === 'none') { filtered = filtered.filter(o => !o.assignedDriver); title = "Packliste: Ohne Fahrer"; }
+      const selectedDate = document.getElementById('workDate').value;
+      let filtered = allOrders.filter(o => o.deliveryDate === selectedDate && o.status !== 'Delivered' && o.status !== 'Returned');
 
-        const agg = {};
-        filtered.forEach(o => { o.items.forEach(i => { const n = i.name.trim(); const qty = parseFloat(i.qty)||0; const unit = i.qty.replace(/[0-9.]/g, '').trim(); if(!agg[n]) agg[n] = {count:0, unit:unit}; agg[n].count += qty; }); });
+      let title = "Gesamt Packliste";
+      if (currentDriverFilter !== 'all' && currentDriverFilter !== 'none') {
+        filtered = filtered.filter(o => o.assignedDriver === currentDriverFilter);
+        title = "Packliste: " + currentDriverFilter;
+      } else if (currentDriverFilter === 'none') {
+        filtered = filtered.filter(o => !o.assignedDriver);
+        title = "Packliste: Ohne Fahrer";
+      }
 
-        uiSetText('plTitle', title);
-        const listBody = document.getElementById('plBody'); listBody.innerHTML = '';
-        
-        if(Object.keys(agg).length === 0) listBody.innerHTML = '<li class="list-group-item text-center text-muted">Leer</li>';
-        Object.keys(agg).sort().forEach(k => { listBody.innerHTML += `<li class="list-group-item d-flex justify-content-between"><span>${k}</span><strong>${agg[k].count} ${agg[k].unit}</strong></li>`; });
-        new bootstrap.Modal(document.getElementById('packListModal')).show();
+      const agg = {};
+      filtered.forEach(o => {
+        (o.items||[]).forEach(i => {
+          const n = (i.name || "").trim();
+          const qty = parseQtyNumber(i.qty);
+          const unit = String(i.qty || "").replace(/[0-9.,]/g, '').trim();
+          if (!agg[n]) agg[n] = { count: 0, unit: unit };
+          agg[n].count += qty;
+        });
+      });
+
+      document.getElementById('plTitle').innerText = title;
+      const listBody = document.getElementById('plBody');
+      listBody.innerHTML = '';
+
+      if (Object.keys(agg).length === 0) listBody.innerHTML = '<li class="list-group-item text-center text-muted">Leer</li>';
+      Object.keys(agg).sort().forEach(k => {
+        listBody.innerHTML += `<li class="list-group-item d-flex justify-content-between"><span>${escapeHtml(k)}</span><strong>${agg[k].count} ${escapeHtml(agg[k].unit||"")}</strong></li>`;
+      });
+
+      new bootstrap.Modal(document.getElementById('packListModal')).show();
     };
 
+    // ====== PACK MODAL ======
     window.openPackModal = (id) => {
-        const o = allOrders.find(x => x.id === id); if(!o) return; currentOrderId = id;
-        uiSetText('packCustName', o.customerName.split('|')[0]);
-        
-        const dSel = document.getElementById('modalDriverSelect');
-        dSel.innerHTML = '<option value="">-- Fahrer wählen --</option>';
-        drivers.forEach(d => dSel.innerHTML += `<option value="${d}" ${o.assignedDriver===d?'selected':''}>${d}</option>`);
+      const o = allOrders.find(x => x.id === id);
+      if (!o) return;
+      currentOrderId = id;
 
-        const list = document.getElementById('packItemsList'); list.innerHTML = '';
-        currentPackState = new Array(o.items.length).fill(null); 
+      uiSetText('packCustName', (o.customerName || "").split('|')[0]);
 
-        o.items.forEach((item, idx) => { 
-            list.innerHTML += `
-            <div class="item-row" id="row-${idx}">
-                <div class="lh-1">
-                    <div class="fw-bold" style="font-size:1.1rem">${item.qty}</div>
-                    <div class="small item-name">${item.name}</div>
-                </div>
-                <div class="item-actions">
-                    <div class="btn-check-item ok" onclick="setItemState(${idx}, 'ok')"><i class="fa fa-check"></i></div>
-                    <div class="btn-check-item missing" onclick="setItemState(${idx}, 'missing')"><i class="fa fa-exclamation"></i></div>
-                </div>
-            </div>`; 
-        });
-        updateProgress();
-        new bootstrap.Modal(document.getElementById('packModal')).show();
+      const dSel = document.getElementById('modalDriverSelect');
+      dSel.innerHTML = '<option value="">-- Fahrer wählen --</option>';
+      drivers.forEach(d => dSel.innerHTML += `<option value="${escapeHtml(d)}" ${o.assignedDriver===d?'selected':''}>${escapeHtml(d)}</option>`);
+
+      const list = document.getElementById('packItemsList');
+      list.innerHTML = '';
+      currentPackState = new Array((o.items||[]).length).fill(null);
+
+      (o.items||[]).forEach((item, idx) => {
+        list.innerHTML += `
+          <div class="item-row" id="row-${idx}">
+            <div class="lh-1">
+              <div class="fw-bold" style="font-size:1.1rem">${escapeHtml(item.qty)}</div>
+              <div class="small item-name">${escapeHtml(item.name)}</div>
+            </div>
+            <div class="item-actions">
+              <div class="btn-check-item ok" onclick="setItemState(${idx}, 'ok')"><i class="fa fa-check"></i></div>
+              <div class="btn-check-item missing" onclick="setItemState(${idx}, 'missing')"><i class="fa fa-exclamation"></i></div>
+            </div>
+          </div>`;
+      });
+
+      updateProgress();
+      new bootstrap.Modal(document.getElementById('packModal')).show();
     };
 
     window.setItemState = (idx, state) => {
-        const row = document.getElementById(`row-${idx}`);
-        if(!row) return;
-        row.classList.remove('ok', 'missing');
-        if (currentPackState[idx] === state) { currentPackState[idx] = null; } 
-        else { currentPackState[idx] = state; row.classList.add(state); }
-        updateProgress();
+      const row = document.getElementById(`row-${idx}`);
+      if (!row) return;
+      row.classList.remove('ok', 'missing');
+      if (currentPackState[idx] === state) {
+        currentPackState[idx] = null;
+      } else {
+        currentPackState[idx] = state;
+        row.classList.add(state);
+      }
+      updateProgress();
     };
 
     function updateProgress() {
-        const total = currentPackState.length;
-        const done = currentPackState.filter(s => s !== null).length;
-        const pct = total === 0 ? 0 : (done / total) * 100;
-        const progBar = document.getElementById('packProgress');
-        const btn = document.getElementById('btnFinishPack');
-        if(progBar) progBar.style.width = pct + '%';
-        if(btn) btn.disabled = (done < total);
+      const total = currentPackState.length;
+      const done = currentPackState.filter(s => s !== null).length;
+      const pct = total === 0 ? 0 : (done / total) * 100;
+      const progBar = document.getElementById('packProgress');
+      const btn = document.getElementById('btnFinishPack');
+      if (progBar) progBar.style.width = pct + '%';
+      if (btn) btn.disabled = (done < total);
     }
 
-    window.updateOrderDriver = async (val) => { 
-        try { await updateDoc(doc(db, "orders", currentOrderId), { assignedDriver: val }); }
-        catch(e) { alert("Fehler beim Speichern: " + e.message); }
+    window.updateOrderDriver = async (val) => {
+      try { await updateDoc(doc(db, "orders", currentOrderId), { assignedDriver: val }); }
+      catch (e) { alert("Fehler beim Speichern: " + e.message); }
     };
 
-    window.finishPacking = async () => { 
-        try {
-            const o = allOrders.find(x => x.id === currentOrderId);
-            const missingItems = [];
-            o.items.forEach((item, idx) => { if(currentPackState[idx] === 'missing') missingItems.push({ name: item.name, qty: item.qty }); });
-            await updateDoc(doc(db, "orders", currentOrderId), { status: 'Packed', packedBy: currentUser.name, packedAt: new Date().toISOString(), missingItems: missingItems }); 
-            bootstrap.Modal.getInstance(document.getElementById('packModal')).hide(); 
-        } catch(e) { alert("Fehler: " + e.message); }
-    };
+    // ====== INVENTORY MATCH + MOVEMENT LOG ======
+    async function findInventoryDocForOrderItem(item){
+      const nameRaw = item?.name || "";
+      const skuFromName = extractSkuFromName(nameRaw);
+      const sku = (item?.sku || skuFromName || "").trim();
 
-    window.sendStockAlert = async () => { const item = prompt("Welcher Artikel fehlt?"); if(item) { await addDoc(collection(db, "alerts"), { type: 'stock', item: item, msg: 'Nicht genug Bestand', from: currentUser.name, createdAt: new Date().toISOString() }); alert("Gemeldet!"); } };
+      if (sku) {
+        const ref = doc(db, "inventory", sku);
+        const snap = await getDoc(ref);
+        if (snap.exists()) return { sku, ref, data: snap.data() };
+      }
 
-    window.openReportModal = () => {
-        const selectedDate = document.getElementById('workDate').value;
-        const packedOrders = allOrders.filter(o => o.deliveryDate === selectedDate && o.status === 'Packed' && o.packedBy === currentUser.name);
-        uiSetText('repPackedCount', packedOrders.length);
+      const norm = normalizeName(nameRaw);
+      const q = query(collection(db, "inventory"), where("normalizedName", "==", norm), limit(1));
+      const res = await getDocs(q);
+      if (!res.empty) {
+        const d = res.docs[0];
+        return { sku: d.id, ref: doc(db, "inventory", d.id), data: d.data() };
+      }
+      return null;
+    }
 
-        const aggPacked = {};
-        const missingListRaw = [];
+    async function writeMovement({type, sku, name, qtyDelta, price, refOrderId, reason}){
+      const valueDelta = Number(qtyDelta || 0) * Number(price || 0);
+      await addDoc(collection(db, "inventory_movements"), {
+        type,
+        sku: sku || "",
+        name: name || "",
+        qtyDelta: Number(qtyDelta || 0),
+        price: Number(price || 0),
+        valueDelta,
+        refOrderId: refOrderId || "",
+        reason: reason || "",
+        by: currentUser?.name || "",
+        at: new Date().toISOString()
+      });
+    }
 
-        packedOrders.forEach(o => {
-            const missingNames = o.missingItems ? o.missingItems.map(m => m.name) : [];
-            if(o.missingItems) {
-                o.missingItems.forEach(mi => {
-                    missingListRaw.push({ cust: o.customerName.split('|')[0], name: mi.name, qty: mi.qty });
-                });
-            }
-            o.items.forEach(i => {
-                const isMissing = o.missingItems && o.missingItems.some(mi => mi.name === i.name);
-                if (!isMissing) {
-                    const n = i.name.trim();
-                    const qty = parseFloat(i.qty) || 0;
-                    const unit = i.qty.replace(/[0-9.]/g, '').trim();
-                    if(!aggPacked[n]) aggPacked[n] = {count:0, unit:unit};
-                    aggPacked[n].count += qty;
-                }
-            });
+    async function autoDeductInventoryForPackedOrder(order){
+      if (order.inventoryDeductedAt) return;
+
+      const items = order.items || [];
+      for (const it of items) {
+        const qty = parseQtyNumber(it.qty);
+        if (!qty) continue;
+
+        const found = await findInventoryDocForOrderItem(it);
+        if (!found) continue;
+
+        await updateDoc(found.ref, {
+          qty: increment(-qty),
+          updatedAt: new Date().toISOString()
         });
 
-        const pList = document.getElementById('repPackedList'); pList.innerHTML = '';
-        if(Object.keys(aggPacked).length === 0) pList.innerHTML = '<div class="text-muted small">Nichts gepackt.</div>';
-        else {
-            Object.keys(aggPacked).sort().forEach(k => {
-                pList.innerHTML += `<div class="d-flex justify-content-between border-bottom py-1 small"><span>${k}</span><strong>${aggPacked[k].count} ${aggPacked[k].unit}</strong></div>`;
-            });
-        }
+        await writeMovement({
+          type: "sale",
+          sku: found.sku,
+          name: found.data?.name || it.name || "",
+          qtyDelta: -qty,
+          price: found.data?.price ?? 0,
+          refOrderId: order.id,
+          reason: "Packed"
+        });
+      }
 
-        const mList = document.getElementById('repMissingList'); mList.innerHTML = '';
-        if(missingListRaw.length === 0) mList.innerHTML = '<div class="text-success small"><i class="fa fa-check"></i> Keine Fehlmengen.</div>';
-        else {
-            missingListRaw.forEach(m => {
-                mList.innerHTML += `<div class="border-bottom py-1 small text-danger"><strong>${m.cust}</strong>: ${m.qty} ${m.name}</div>`;
-            });
-        }
+      await updateDoc(doc(db, "orders", order.id), {
+        inventoryDeductedAt: new Date().toISOString()
+      });
+    }
 
-        new bootstrap.Modal(document.getElementById('reportModal')).show(); 
-        setTimeout(setupCanvas, 500); 
+    window.finishPacking = async () => {
+      try {
+        const o = allOrders.find(x => x.id === currentOrderId);
+        const missingItems = [];
+        (o.items||[]).forEach((item, idx) => {
+          if (currentPackState[idx] === 'missing') {
+            missingItems.push({
+              name: item.name,
+              qty: item.qty,
+              sku: item.sku || extractSkuFromName(item.name) || ""
+            });
+          }
+        });
+
+        await updateDoc(doc(db, "orders", currentOrderId), {
+          status: 'Packed',
+          packedBy: currentUser.name,
+          packedAt: new Date().toISOString(),
+          missingItems: missingItems
+        });
+
+        const packedOnlyItems = (o.items||[]).filter((item, idx) => currentPackState[idx] !== 'missing');
+        const packedOrder = { ...o, id: currentOrderId, items: packedOnlyItems };
+
+        await autoDeductInventoryForPackedOrder(packedOrder);
+
+        bootstrap.Modal.getInstance(document.getElementById('packModal')).hide();
+      } catch (e) {
+        alert("Fehler: " + e.message);
+      }
+    };
+
+    window.sendStockAlert = async () => {
+      const item = prompt("Welcher Artikel fehlt?");
+      if (item) {
+        await addDoc(collection(db, "alerts"), {
+          type: 'stock',
+          item: item,
+          msg: 'Nicht genug Bestand',
+          from: currentUser.name,
+          createdAt: new Date().toISOString()
+        });
+        alert("Gemeldet!");
+      }
+    };
+
+    // ====== REPORT ======
+    window.openReportModal = () => {
+      const selectedDate = document.getElementById('workDate').value;
+      const packedOrders = allOrders.filter(o => o.deliveryDate === selectedDate && o.status === 'Packed' && o.packedBy === currentUser.name);
+      uiSetText('repPackedCount', packedOrders.length);
+
+      const aggPacked = {};
+      const missingListRaw = [];
+
+      packedOrders.forEach(o => {
+        if (o.missingItems) {
+          o.missingItems.forEach(mi => {
+            missingListRaw.push({ cust: (o.customerName||"").split('|')[0], name: mi.name, qty: mi.qty });
+          });
+        }
+        (o.items||[]).forEach(i => {
+          const isMissing = o.missingItems && o.missingItems.some(mi => mi.name === i.name);
+          if (!isMissing) {
+            const n = (i.name||"").trim();
+            const qty = parseQtyNumber(i.qty) || 0;
+            const unit = String(i.qty || "").replace(/[0-9.,]/g, '').trim();
+            if (!aggPacked[n]) aggPacked[n] = { count: 0, unit: unit };
+            aggPacked[n].count += qty;
+          }
+        });
+      });
+
+      const pList = document.getElementById('repPackedList');
+      pList.innerHTML = '';
+      if (Object.keys(aggPacked).length === 0) pList.innerHTML = '<div class="text-muted small">Nichts gepackt.</div>';
+      else {
+        Object.keys(aggPacked).sort().forEach(k => {
+          pList.innerHTML += `<div class="d-flex justify-content-between border-bottom py-1 small"><span>${escapeHtml(k)}</span><strong>${aggPacked[k].count} ${escapeHtml(aggPacked[k].unit||"")}</strong></div>`;
+        });
+      }
+
+      const mList = document.getElementById('repMissingList');
+      mList.innerHTML = '';
+      if (missingListRaw.length === 0) mList.innerHTML = '<div class="text-success small"><i class="fa fa-check"></i> Keine Fehlmengen.</div>';
+      else {
+        missingListRaw.forEach(m => {
+          mList.innerHTML += `<div class="border-bottom py-1 small text-danger"><strong>${escapeHtml(m.cust)}</strong>: ${escapeHtml(m.qty)} ${escapeHtml(m.name)}</div>`;
+        });
+      }
+
+      new bootstrap.Modal(document.getElementById('reportModal')).show();
+      setTimeout(setupCanvas, 500);
     };
 
     window.submitReport = async () => {
-        if(!sigCanvas) return;
-        const sig = sigCanvas.toDataURL();
-        const ctx = sigCanvas.getContext('2d');
-        const isSigBlank = !ctx.getImageData(0,0,sigCanvas.width,sigCanvas.height).data.some(c=>c!==0);
-        
-        if(isSigBlank && !isDrawing) { alert("Bitte unterschreiben!"); return; }
+      if (!sigCanvas) return;
+      const sig = sigCanvas.toDataURL();
+      const ctx = sigCanvas.getContext('2d');
+      const isSigBlank = !ctx.getImageData(0,0,sigCanvas.width,sigCanvas.height).data.some(c=>c!==0);
 
-        try {
-            const packedCount = document.getElementById('repPackedCount').innerText;
-            const packedHTML = document.getElementById('repPackedList').innerHTML;
-            const missingHTML = document.getElementById('repMissingList').innerHTML;
+      if (isSigBlank && !isDrawing) { alert("Bitte unterschreiben!"); return; }
 
-            await addDoc(collection(db, "daily_reports"), { 
-                type: 'warehouse', 
-                date: new Date().toISOString(), 
-                by: currentUser.name, 
-                summary: `<strong>Anzahl: ${packedCount}</strong><br><hr><strong>Gepackt:</strong><br>${packedHTML}<br><hr><strong>Fehlmengen:</strong><br>${missingHTML}`, 
-                signature: sig 
-            });
-            bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
-            alert("Tagesabschluss gesendet!");
-        } catch(e) { alert("Fehler: " + e.message); }
+      try {
+        const packedCount = document.getElementById('repPackedCount').innerText;
+        const packedHTML = document.getElementById('repPackedList').innerHTML;
+        const missingHTML = document.getElementById('repMissingList').innerHTML;
+
+        await addDoc(collection(db, "daily_reports"), {
+          type: 'warehouse',
+          date: new Date().toISOString(),
+          by: currentUser.name,
+          summary: `<strong>Anzahl: ${packedCount}</strong><br><hr><strong>Gepackt:</strong><br>${packedHTML}<br><hr><strong>Fehlmengen:</strong><br>${missingHTML}`,
+          signature: sig
+        });
+        bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
+        alert("Tagesabschluss gesendet!");
+      } catch (e) {
+        alert("Fehler: " + e.message);
+      }
     };
 
-    function setupCanvas() { 
-        sigCanvas = document.getElementById('sigPad'); 
-        if(!sigCanvas) return;
-        sigCtx = sigCanvas.getContext('2d'); 
-        
-        // Correct scaling for High DPI screens if needed, but basic size adjust here:
-        const parent = sigCanvas.parentElement;
-        sigCanvas.width = parent.offsetWidth;
-        sigCanvas.height = parent.offsetHeight; 
+    function setupCanvas() {
+      sigCanvas = document.getElementById('sigPad');
+      if (!sigCanvas) return;
+      sigCtx = sigCanvas.getContext('2d');
 
-        sigCtx.lineWidth = 3; sigCtx.lineCap = "round"; sigCtx.strokeStyle = "#000"; 
-        const start=(e)=>{e.preventDefault(); isDrawing=true; sigCtx.beginPath(); const p=getPos(e); sigCtx.moveTo(p.x, p.y);}; 
-        const move=(e)=>{if(!isDrawing)return; e.preventDefault(); const p=getPos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke();}; 
-        const end=()=>isDrawing=false; 
-        ['touchstart','mousedown'].forEach(e=>sigCanvas.addEventListener(e,start)); ['touchmove','mousemove'].forEach(e=>sigCanvas.addEventListener(e,move)); ['touchend','mouseup'].forEach(e=>sigCanvas.addEventListener(e,end)); 
+      const parent = sigCanvas.parentElement;
+      sigCanvas.width = parent.offsetWidth;
+      sigCanvas.height = parent.offsetHeight;
+
+      sigCtx.lineWidth = 3; sigCtx.lineCap = "round"; sigCtx.strokeStyle = "#000";
+
+      const start = (e) => { e.preventDefault(); isDrawing = true; sigCtx.beginPath(); const p = getPos(e); sigCtx.moveTo(p.x, p.y); };
+      const move  = (e) => { if (!isDrawing) return; e.preventDefault(); const p = getPos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); };
+      const end   = () => { isDrawing = false; };
+
+      ['touchstart','mousedown'].forEach(ev => sigCanvas.addEventListener(ev, start));
+      ['touchmove','mousemove'].forEach(ev => sigCanvas.addEventListener(ev, move));
+      ['touchend','mouseup'].forEach(ev => sigCanvas.addEventListener(ev, end));
     }
-    
-    function getPos(e) { const t=e.touches?e.touches[0]:e; const r=sigCanvas.getBoundingClientRect(); return {x:t.clientX-r.left, y:t.clientY-r.top}; }
-    window.clearSig = () => { if(sigCtx) sigCtx.clearRect(0,0,sigCanvas.width,sigCanvas.height); };
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    function getPos(e) {
+      const t = e.touches ? e.touches[0] : e;
+      const r = sigCanvas.getBoundingClientRect();
+      return { x: t.clientX - r.left, y: t.clientY - r.top };
+    }
+    window.clearSig = () => { if (sigCtx) sigCtx.clearRect(0,0,sigCanvas.width,sigCanvas.height); };
+
+    // ====== INVENTORY SYNC + RENDER ======
+    function startSyncInventory(){
+      onSnapshot(collection(db, "inventory"), (s) => {
+        inventory = [];
+        s.forEach(d => inventory.push({ sku: d.id, ...d.data() }));
+        invLoadedOnce = true;
+        renderInventory();
+      });
+    }
+
+    window.refreshInventory = async () => {
+      try{
+        const snap = await getDocs(collection(db, "inventory"));
+        inventory = [];
+        snap.forEach(d => inventory.push({ sku: d.id, ...d.data() }));
+        invLoadedOnce = true;
+        renderInventory();
+      }catch(e){
+        alert("Reload Fehler: " + e.message);
+      }
+    };
+
+    function calcExpFlag(expDateStr){
+      if(!expDateStr) return { isExpSoon:false, isExpired:false, days: null };
+      const today = new Date();
+      const exp = new Date(expDateStr + "T00:00:00");
+      const diff = Math.ceil((exp - today) / (1000*60*60*24));
+      return { isExpSoon: diff <= 14, isExpired: diff < 0, days: diff };
+    }
+
+    window.invShowAll = () => { document.getElementById('invSearch').value = ""; renderInventory(); };
+
+    window.renderInventory = () => {
+      const tbody = document.getElementById('invTbody');
+      if(!tbody) return;
+
+      const q = normalizeName(document.getElementById('invSearch').value || "");
+      let rows = [...inventory];
+
+      rows.sort((a,b)=>{
+        const aNeg = Number(a.qty||0) < 0 ? 1 : 0;
+        const bNeg = Number(b.qty||0) < 0 ? 1 : 0;
+        if(aNeg !== bNeg) return bNeg - aNeg;
+
+        const aExp = calcExpFlag(a.expDate).isExpSoon ? 1 : 0;
+        const bExp = calcExpFlag(b.expDate).isExpSoon ? 1 : 0;
+        if(aExp !== bExp) return bExp - aExp;
+
+        const aLow = Number(a.qty||0) < Number(a.minQty ?? 5) ? 1 : 0;
+        const bLow = Number(b.qty||0) < Number(b.minQty ?? 5) ? 1 : 0;
+        if(aLow !== bLow) return bLow - aLow;
+
+        return (a.name||"").localeCompare(b.name||"");
+      });
+
+      if(q){
+        rows = rows.filter(it=>{
+          const hay = [
+            it.sku, it.name, it.category, it.barcode, it.location, it.supplier, it.batch
+          ].map(x=>normalizeName(x)).join(" ");
+          return hay.includes(q);
+        });
+      }
+
+      let totalValue = 0;
+      rows.forEach(it => totalValue += (Number(it.qty||0) * Number(it.price||0)));
+      uiSetText("invTotalItems", rows.length);
+      uiSetText("invTotalValue", moneyCHF(totalValue));
+
+      let cntLow=0, cntExp=0, cntNeg=0;
+      inventory.forEach(it=>{
+        const qty = Number(it.qty||0);
+        const min = Number(it.minQty ?? 5);
+        const exp = calcExpFlag(it.expDate);
+        if(qty < 0) cntNeg++;
+        if(exp.isExpSoon) cntExp++;
+        if(qty < min) cntLow++;
+      });
+      uiSetText("cntLow", cntLow);
+      uiSetText("cntExp", cntExp);
+      uiSetText("cntNeg", cntNeg);
+
+      if(rows.length === 0){
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Keine Artikel gefunden.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = "";
+      rows.forEach(it=>{
+        const qty = Number(it.qty||0);
+        const min = Number(it.minQty ?? 5);
+        const exp = calcExpFlag(it.expDate);
+
+        let cls = "";
+        if(qty < 0) cls = "inv-row-neg";
+        else if(exp.isExpSoon) cls = "inv-row-exp";
+        else if(qty < min) cls = "inv-row-low";
+
+        const expLabel = it.expDate ? it.expDate : "—";
+        const locLabel = it.location ? escapeHtml(it.location) : "—";
+
+        tbody.innerHTML += `
+          <tr class="${cls}">
+            <td class="fw-bold">${escapeHtml(it.sku||"")}</td>
+            <td>
+              <div class="fw-bold">${escapeHtml(it.name||"")}</div>
+              <div class="small text-muted">${escapeHtml(it.category||"")}${it.barcode ? " · " + escapeHtml(it.barcode) : ""}</div>
+            </td>
+            <td>${moneyCHF(it.price||0)}</td>
+            <td class="fw-bold">${qty}</td>
+            <td>${min}</td>
+            <td>${escapeHtml(expLabel)}
+              ${exp.isExpired ? `<span class="badge bg-danger ms-2">expired</span>` : (exp.isExpSoon ? `<span class="badge bg-primary ms-2">≤14d</span>` : ``)}
+            </td>
+            <td>${locLabel}</td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-secondary inv-edit-btn"
+                onclick="openInvModal('edit','${escapeJs(it.sku)}')">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+          </tr>`;
+      });
+    };
+
+    // ====== INVENTORY MODAL ======
+    window.invSwitchFormTab = (tab) => {
+      const basic = document.getElementById('invFormBasic');
+      const adv = document.getElementById('invFormAdv');
+      const bBtn = document.getElementById('tabBasicBtn');
+      const aBtn = document.getElementById('tabAdvBtn');
+
+      if(tab === 'basic'){
+        basic.classList.remove('d-none');
+        adv.classList.add('d-none');
+        bBtn.classList.remove('btn-gray'); bBtn.classList.add('btn-blue');
+        aBtn.classList.remove('btn-blue'); aBtn.classList.add('btn-gray');
+      } else {
+        adv.classList.remove('d-none');
+        basic.classList.add('d-none');
+        aBtn.classList.remove('btn-gray'); aBtn.classList.add('btn-blue');
+        bBtn.classList.remove('btn-blue'); bBtn.classList.add('btn-gray');
+      }
+    };
+
+    function resetInvForm(){
+      [
+        "invSku","invName","invPrice","invQty","invUnit","invMinQty","invLocation",
+        "invExpDate","invWeight","invWeightUnit","invBarcode","invCategory","invSupplier","invBatch","invNotes"
+      ].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.value = "";
+      });
+      document.getElementById("invSkuHidden").value = "";
+      window.invSwitchFormTab('basic');
+    }
+
+    window.openInvModal = async (mode, sku="") => {
+      resetInvForm();
+      document.getElementById("invMode").value = mode;
+
+      if(mode === "add") uiSetText("invModalTitle","Artikel hinzufügen");
+      else uiSetText("invModalTitle","Artikel bearbeiten");
+
+      if(mode === "edit" && sku){
+        const snap = await getDoc(doc(db, "inventory", sku));
+        if(snap.exists()){
+          const it = snap.data();
+          document.getElementById("invSkuHidden").value = sku;
+          document.getElementById("invSku").value = sku;
+          document.getElementById("invName").value = it.name || "";
+          document.getElementById("invPrice").value = it.price ?? "";
+          document.getElementById("invQty").value = it.qty ?? "";
+          document.getElementById("invUnit").value = it.unit || "";
+          document.getElementById("invMinQty").value = it.minQty ?? "";
+          document.getElementById("invLocation").value = it.location || "";
+
+          document.getElementById("invExpDate").value = it.expDate || "";
+          document.getElementById("invWeight").value = it.weight ?? "";
+          document.getElementById("invWeightUnit").value = it.weightUnit || "";
+          document.getElementById("invBarcode").value = it.barcode || "";
+          document.getElementById("invCategory").value = it.category || "";
+          document.getElementById("invSupplier").value = it.supplier || "";
+          document.getElementById("invBatch").value = it.batch || "";
+          document.getElementById("invNotes").value = it.notes || "";
+        }
+      }
+
+      new bootstrap.Modal(document.getElementById('invModal')).show();
+    };
+
+    window.saveInventoryItem = async () => {
+      try{
+        const mode = document.getElementById("invMode").value;
+        const existingSku = document.getElementById("invSkuHidden").value;
+
+        const name = document.getElementById("invName").value.trim();
+        if(!name) return alert("Name fehlt!");
+
+        const skuInput = document.getElementById("invSku").value.trim();
+        const sku = (mode === "edit" ? existingSku : (skuInput || extractSkuFromName(name) || "")).trim();
+
+        const safeFallbackSku = normalizeName(name).replaceAll(" ", "-").replace(/[^a-z0-9\-]/g,"").slice(0,60) || ("item-" + Date.now());
+        const docId = sku || safeFallbackSku;
+
+        const data = {
+          name,
+          normalizedName: normalizeName(name),
+          price: Number(document.getElementById("invPrice").value || 0),
+          qty: Number(document.getElementById("invQty").value || 0),
+          unit: document.getElementById("invUnit").value.trim() || "",
+          minQty: Number(document.getElementById("invMinQty").value || 5),
+          location: document.getElementById("invLocation").value.trim() || "",
+
+          expDate: document.getElementById("invExpDate").value || "",
+          weight: document.getElementById("invWeight").value ? Number(document.getElementById("invWeight").value) : null,
+          weightUnit: document.getElementById("invWeightUnit").value || "",
+          barcode: document.getElementById("invBarcode").value.trim() || "",
+          category: document.getElementById("invCategory").value.trim() || "",
+          supplier: document.getElementById("invSupplier").value.trim() || "",
+          batch: document.getElementById("invBatch").value.trim() || "",
+          notes: document.getElementById("invNotes").value.trim() || "",
+
+          updatedAt: new Date().toISOString()
+        };
+
+        const ref = doc(db, "inventory", mode === "edit" ? existingSku : docId);
+        await setDoc(ref, data, { merge: true });
+
+        // optional movement trace (edit/add)
+        await writeMovement({
+          type: "adjust",
+          sku: (mode === "edit" ? existingSku : docId),
+          name: data.name,
+          qtyDelta: 0,
+          price: data.price,
+          refOrderId: "",
+          reason: (mode === "edit" ? "Item updated" : "Item created")
+        });
+
+        bootstrap.Modal.getInstance(document.getElementById('invModal')).hide();
+      }catch(e){
+        alert("Speichern Fehler: " + e.message);
+      }
+    };
+
+    // ====== MOVEMENTS ======
+    window.openMovementLog = () => {
+      const m = document.getElementById("movMonth");
+      if(!m.value){
+        const d = new Date();
+        m.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+      }
+      new bootstrap.Modal(document.getElementById("movLogModal")).show();
+      loadMovementLog();
+    };
+
+    function monthRange(monthStr){
+      const [y,m] = monthStr.split("-").map(Number);
+      const start = new Date(y, m-1, 1, 0,0,0);
+      const end   = new Date(y, m,   1, 0,0,0);
+      return { startISO: start.toISOString(), endISO: end.toISOString() };
+    }
+
+    window.loadMovementLog = async () => {
+      try{
+        const monthStr = document.getElementById("movMonth").value;
+        if(!monthStr) return;
+
+        const { startISO, endISO } = monthRange(monthStr);
+        const type = document.getElementById("movType").value;
+
+        const qBase = query(
+          collection(db, "inventory_movements"),
+          where("at", ">=", startISO),
+          where("at", "<", endISO),
+          orderBy("at", "desc"),
+          limit(500)
+        );
+
+        const snap = await getDocs(qBase);
+        movementRows = [];
+        snap.forEach(d => movementRows.push({ id: d.id, ...d.data() }));
+        if(type) movementRows = movementRows.filter(r => r.type === type);
+
+        renderMovementLog();
+      }catch(e){
+        alert("Bewegung Fehler: " + e.message);
+      }
+    };
+
+    window.renderMovementLog = () => {
+      const tbody = document.getElementById("movTbody");
+      const q = normalizeName(document.getElementById("movSearch").value || "");
+      movementFiltered = q
+        ? movementRows.filter(r=>{
+            const hay = [r.type, r.sku, r.name, r.refOrderId, r.reason, r.by].map(x=>normalizeName(x)).join(" ");
+            return hay.includes(q);
+          })
+        : [...movementRows];
+
+      let sum = 0;
+      movementFiltered.forEach(r => sum += Number(r.valueDelta || 0));
+      uiSetText("movSum", moneyCHF(sum));
+
+      if(movementFiltered.length === 0){
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Keine Daten.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = "";
+      movementFiltered.forEach(r=>{
+        const d = (r.at || "").slice(0,19).replace("T"," ");
+        const qty = Number(r.qtyDelta||0);
+        const val = Number(r.valueDelta||0);
+        const qtyCls = qty < 0 ? "text-danger fw-bold" : "text-success fw-bold";
+        const valCls = val < 0 ? "text-danger fw-bold" : "text-success fw-bold";
+        tbody.innerHTML += `
+          <tr>
+            <td class="small">${escapeHtml(d)}</td>
+            <td><span class="badge bg-dark">${escapeHtml(r.type||"")}</span></td>
+            <td class="fw-bold">${escapeHtml(r.sku||"")}</td>
+            <td>${escapeHtml(r.name||"")}</td>
+            <td class="text-end ${qtyCls}">${qty}</td>
+            <td class="text-end ${valCls}">${moneyCHF(val)}</td>
+            <td class="small">${escapeHtml(r.refOrderId||r.reason||"")}</td>
+            <td class="small">${escapeHtml(r.by||"")}</td>
+          </tr>`;
+      });
+    };
+
+    window.exportMovementCSV = () => {
+      const rows = movementFiltered.length ? movementFiltered : movementRows;
+      if(!rows.length) return alert("Keine Daten zum Export.");
+
+      const header = ["at","type","sku","name","qtyDelta","price","valueDelta","refOrderId","reason","by"];
+      const csv = [header.join(";")].concat(
+        rows.map(r => header.map(k => `"${String(r[k] ?? "").replaceAll('"','""')}"`).join(";"))
+      ).join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "bewegung.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    window.openMovementModal = (type) => {
+      if(type === "export"){ openMovementLog(); return; }
+      document.getElementById("movActType").value = type;
+      uiSetText("movActTitle", type === "return" ? "Return (Rückgabe)" : "Waste (Abfall/Defekt/Ablauf)");
+      document.getElementById("movSku").value = "";
+      document.getElementById("movName").value = "";
+      document.getElementById("movQty").value = "";
+      document.getElementById("movReason").value = "";
+
+      new bootstrap.Modal(document.getElementById("movActModal")).show();
+    };
+
+    window.applyMovement = async () => {
+      try{
+        const type = document.getElementById("movActType").value;
+        const sku = document.getElementById("movSku").value.trim();
+        const name = document.getElementById("movName").value.trim();
+        const qty = Number(document.getElementById("movQty").value || 0);
+        const reason = document.getElementById("movReason").value.trim();
+
+        if(!qty) return alert("Menge fehlt!");
+        if(!sku && !name) return alert("Bitte SKU oder Name eingeben.");
+
+        let found = null;
+        if(sku){
+          const s = await getDoc(doc(db, "inventory", sku));
+          if(s.exists()) found = { sku, ref: doc(db,"inventory",sku), data: s.data() };
+        }
+        if(!found){
+          const qn = query(collection(db, "inventory"), where("normalizedName","==", normalizeName(name)), limit(1));
+          const res = await getDocs(qn);
+          if(!res.empty){
+            const d = res.docs[0];
+            found = { sku: d.id, ref: doc(db,"inventory",d.id), data: d.data() };
+          }
+        }
+        if(!found) return alert("Artikel nicht gefunden.");
+
+        const delta = (type === "return") ? Math.abs(qty) : -Math.abs(qty);
+        await updateDoc(found.ref, { qty: increment(delta), updatedAt: new Date().toISOString() });
+
+        await writeMovement({
+          type,
+          sku: found.sku,
+          name: found.data?.name || name || "",
+          qtyDelta: delta,
+          price: found.data?.price ?? 0,
+          refOrderId: "",
+          reason: reason || type
+        });
+
+        bootstrap.Modal.getInstance(document.getElementById("movActModal")).hide();
+      }catch(e){
+        alert("Bewegung Fehler: " + e.message);
+      }
+    };
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
